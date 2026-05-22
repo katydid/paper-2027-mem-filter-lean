@@ -5,5 +5,5 @@ import VerifiedFilter.Grammar.Katydid
 import VerifiedFilter.Grammar.KatydidExamples
 import VerifiedFilter.Grammar.Lang
 import VerifiedFilter.Grammar.Memoize
-import VerifiedFilter.Grammar.JSONSchema
-import VerifiedFilter.Grammar.JSONSchemaExamples
+import VerifiedFilter.Grammar.JSONmembers
+import VerifiedFilter.Grammar.JSONmembersExamples

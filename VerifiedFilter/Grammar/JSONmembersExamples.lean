@@ -1,14 +1,14 @@
--- Examples of using the JSONSchema algorithm without memoization to validate.
+-- Examples of using the JSONmembers algorithm without memoization to validate.
 
 import VerifiedFilter.Std.Hedge
 
 import VerifiedFilter.Grammar.Grammar
-import VerifiedFilter.Grammar.JSONSchema
+import VerifiedFilter.Grammar.JSONmembers
 
 import VerifiedFilter.Pred.AnyEq
 import VerifiedFilter.Pred.Compare
 
-namespace Grammar.JSONSchema
+namespace Grammar.JSONmembers
 
 open Pred
 open Hedge

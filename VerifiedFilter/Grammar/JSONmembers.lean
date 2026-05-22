@@ -1,4 +1,4 @@
--- The easy to understand symbolic regular hedge grammar derivative algorithm that has been appied to JSONSchema.
+-- The easy to understand symbolic regular hedge grammar derivative algorithm that has been appied to JSONmembers.
 -- We define and proof correctness of derive, validate and filter, see theorem derive_commutes, validate_commutes and mem_filter.
 
 import VerifiedFilter.Std.Decidable
@@ -12,7 +12,7 @@ import VerifiedFilter.Grammar.Grammar
 
 open Hedge
 
-theorem Grammar.JSONSchema.decreasing_or_l {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
+theorem Grammar.JSONmembers.decreasing_or_l {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
   Prod.Lex
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
@@ -21,7 +21,7 @@ theorem Grammar.JSONSchema.decreasing_or_l {α: Type} {σ: Type} [SizeOf σ] (r1
   apply Prod.Lex.right
   simp +arith only [Regex.or.sizeOf_spec]
 
-theorem Grammar.JSONSchema.decreasing_or_r {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
+theorem Grammar.JSONmembers.decreasing_or_r {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
   Prod.Lex
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
@@ -30,7 +30,7 @@ theorem Grammar.JSONSchema.decreasing_or_r {α: Type} {σ: Type} [SizeOf σ] (r1
   apply Prod.Lex.right
   simp +arith only [Regex.or.sizeOf_spec]
 
-theorem Grammar.JSONSchema.decreasing_concat_l {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
+theorem Grammar.JSONmembers.decreasing_concat_l {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
   Prod.Lex
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
@@ -39,7 +39,7 @@ theorem Grammar.JSONSchema.decreasing_concat_l {α: Type} {σ: Type} [SizeOf σ]
   apply Prod.Lex.right
   simp +arith only [Regex.concat.sizeOf_spec]
 
-theorem Grammar.JSONSchema.decreasing_concat_r {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
+theorem Grammar.JSONmembers.decreasing_concat_r {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
   Prod.Lex
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
@@ -48,7 +48,7 @@ theorem Grammar.JSONSchema.decreasing_concat_r {α: Type} {σ: Type} [SizeOf σ]
   apply Prod.Lex.right
   simp +arith only [Regex.concat.sizeOf_spec]
 
-theorem Grammar.JSONSchema.decreasing_star {α: Type} {σ: Type} [SizeOf σ] (r: Regex σ) (x: Hedge.Node α):
+theorem Grammar.JSONmembers.decreasing_star {α: Type} {σ: Type} [SizeOf σ] (r: Regex σ) (x: Hedge.Node α):
   Prod.Lex
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
@@ -57,7 +57,7 @@ theorem Grammar.JSONSchema.decreasing_star {α: Type} {σ: Type} [SizeOf σ] (r:
   apply Prod.Lex.right
   simp +arith only [Regex.star.sizeOf_spec]
 
-theorem Grammar.JSONSchema.decreasing_symbol {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (label: α) (children: Hedge α) (x: Hedge.Node α) (h: x ∈ children):
+theorem Grammar.JSONmembers.decreasing_symbol {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (label: α) (children: Hedge α) (x: Hedge.Node α) (h: x ∈ children):
   Prod.Lex
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
@@ -68,7 +68,7 @@ theorem Grammar.JSONSchema.decreasing_symbol {α: Type} {σ: Type} [SizeOf σ] (
   have h' := List.elem_lt h
   omega
 
-theorem Grammar.JSONSchema.decreasing_interleave_l {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
+theorem Grammar.JSONmembers.decreasing_interleave_l {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
   Prod.Lex
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
@@ -77,7 +77,7 @@ theorem Grammar.JSONSchema.decreasing_interleave_l {α: Type} {σ: Type} [SizeOf
   apply Prod.Lex.right
   simp +arith only [Regex.interleave.sizeOf_spec]
 
-theorem Grammar.JSONSchema.decreasing_interleave_r {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
+theorem Grammar.JSONmembers.decreasing_interleave_r {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
   Prod.Lex
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
@@ -86,7 +86,7 @@ theorem Grammar.JSONSchema.decreasing_interleave_r {α: Type} {σ: Type} [SizeOf
   apply Prod.Lex.right
   simp +arith only [Regex.interleave.sizeOf_spec]
 
-theorem Grammar.JSONSchema.decreasing_and_l {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
+theorem Grammar.JSONmembers.decreasing_and_l {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
   Prod.Lex
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
@@ -95,7 +95,7 @@ theorem Grammar.JSONSchema.decreasing_and_l {α: Type} {σ: Type} [SizeOf σ] (r
   apply Prod.Lex.right
   simp +arith only [Regex.and.sizeOf_spec]
 
-theorem Grammar.JSONSchema.decreasing_and_r {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
+theorem Grammar.JSONmembers.decreasing_and_r {α: Type} {σ: Type} [SizeOf σ] (r1 r2: Regex σ) (x: Hedge.Node α):
   Prod.Lex
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
@@ -104,7 +104,7 @@ theorem Grammar.JSONSchema.decreasing_and_r {α: Type} {σ: Type} [SizeOf σ] (r
   apply Prod.Lex.right
   simp +arith only [Regex.and.sizeOf_spec]
 
-theorem Grammar.JSONSchema.decreasing_compliment {α: Type} {σ: Type} [SizeOf σ] (r1: Regex σ) (x: Hedge.Node α):
+theorem Grammar.JSONmembers.decreasing_compliment {α: Type} {σ: Type} [SizeOf σ] (r1: Regex σ) (x: Hedge.Node α):
   Prod.Lex
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
     (fun a₁ a₂ => sizeOf a₁ < sizeOf a₂)
@@ -113,7 +113,7 @@ theorem Grammar.JSONSchema.decreasing_compliment {α: Type} {σ: Type} [SizeOf �
   apply Prod.Lex.right
   simp +arith only [Regex.compliment.sizeOf_spec]
 
-def Grammar.JSONSchema.derive (G: Grammar n φ) (Φ: φ → α → Bool)
+def Grammar.JSONmembers.derive (G: Grammar n φ) (Φ: φ → α → Bool)
   (r: Regex (φ × Ref n)) (node: Node α): Regex (φ × Ref n) := match r with
   | Regex.emptyset => Regex.emptyset
   | Regex.emptystr => Regex.emptyset
@@ -164,7 +164,7 @@ def Grammar.JSONSchema.derive (G: Grammar n φ) (Φ: φ → α → Bool)
     · apply decreasing_and_r
     · apply decreasing_compliment
 
-namespace Grammar.JSONSchema
+namespace Grammar.JSONmembers
 
 def validate (G: Grammar n φ) (Φ: φ → α → Bool) (nodes: Hedge α): Bool :=
   Regex.null (List.foldl (derive G Φ) G.start nodes)
@@ -172,15 +172,15 @@ def validate (G: Grammar n φ) (Φ: φ → α → Bool) (nodes: Hedge α): Bool 
 def filter (G: Grammar n φ) (Φ: φ → α → Bool) (hedges: List (Hedge α)) :=
   List.filter (validate G Φ) hedges
 
-end Grammar.JSONSchema
+end Grammar.JSONmembers
 
--- The proof begins with functional induction on Grammar.JSONSchema.derive,
+-- The proof begins with functional induction on Grammar.JSONmembers.derive,
 -- producing an inductive hypothesis applicable to the symbol case.
-theorem Grammar.JSONSchema.derive_commutes (G: Grammar n φ) Φ [DecidableRel Φ]
+theorem Grammar.JSONmembers.derive_commutes (G: Grammar n φ) Φ [DecidableRel Φ]
   (r: Regex (φ × Ref n)) (node: Node α):
-  Rule.denote G Φ (Grammar.JSONSchema.derive G (decideRel Φ) r node)
+  Rule.denote G Φ (Grammar.JSONmembers.derive G (decideRel Φ) r node)
   = Lang.derive (Rule.denote G Φ r) node := by
-  fun_induction (Grammar.JSONSchema.derive G (fun p a => Φ p a)) r node with
+  fun_induction (Grammar.JSONmembers.derive G (fun p a => Φ p a)) r node with
   | case1 => -- emptyset
     rw [Grammar.denote_emptyset]
     rw [Lang.derive_emptyset]
@@ -265,21 +265,21 @@ theorem Grammar.JSONSchema.derive_commutes (G: Grammar n φ) Φ [DecidableRel Φ
     unfold Lang.compliment
     rfl
 
-theorem Grammar.JSONSchema.derives_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ] (r: Regex (φ × Ref n)) (nodes: Hedge α):
-  Grammar.Rule.denote G Φ (List.foldl (Grammar.JSONSchema.derive G (decideRel Φ)) r nodes) = Lang.derives (Grammar.Rule.denote G Φ r) nodes := by
+theorem Grammar.JSONmembers.derives_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ] (r: Regex (φ × Ref n)) (nodes: Hedge α):
+  Grammar.Rule.denote G Φ (List.foldl (Grammar.JSONmembers.derive G (decideRel Φ)) r nodes) = Lang.derives (Grammar.Rule.denote G Φ r) nodes := by
   rw [Lang.derives_foldl]
   induction nodes generalizing r with
   | nil =>
     simp only [List.foldl_nil]
   | cons x xs ih =>
     simp only [List.foldl_cons]
-    have h := Grammar.JSONSchema.derive_commutes G Φ r x
-    have ih' := ih (Grammar.JSONSchema.derive G (decideRel Φ) r x)
+    have h := Grammar.JSONmembers.derive_commutes G Φ r x
+    have ih' := ih (Grammar.JSONmembers.derive G (decideRel Φ) r x)
     rw [h] at ih'
     exact ih'
 
 -- Using theorem derive_commutes we can prove validate_commutes.
-theorem Grammar.JSONSchema.validate_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ] (nodes: Hedge α):
+theorem Grammar.JSONmembers.validate_commutes (G: Grammar n φ) (Φ: φ → α → Prop) [DecidableRel Φ] (nodes: Hedge α):
   (validate G (decideRel Φ) nodes = true) = (Grammar.denote G Φ) nodes := by
   unfold Grammar.denote
   rw [<- Lang.validate (Grammar.Rule.denote G Φ G.start) nodes]
@@ -288,9 +288,9 @@ theorem Grammar.JSONSchema.validate_commutes (G: Grammar n φ) (Φ: φ → α �
   rw [<- Grammar.null_commutes]
 
 -- Using validate_commutes we can prove mem_filter.
-theorem Grammar.JSONSchema.mem_filter (Φ: φ → α → Prop) [DecidableRel Φ] (G: Grammar n φ) (xss: List (Hedge α)) :
-  ∀ xs, (xs ∈ Grammar.JSONSchema.filter G (decideRel Φ) xss) ↔ (Lang.MemFilter (Grammar.denote G Φ) xss xs) := by
-  unfold Grammar.JSONSchema.filter
+theorem Grammar.JSONmembers.mem_filter (Φ: φ → α → Prop) [DecidableRel Φ] (G: Grammar n φ) (xss: List (Hedge α)) :
+  ∀ xs, (xs ∈ Grammar.JSONmembers.filter G (decideRel Φ) xss) ↔ (Lang.MemFilter (Grammar.denote G Φ) xss xs) := by
+  unfold Grammar.JSONmembers.filter
   intro xs
   rw [List.mem_filter]
   unfold Lang.MemFilter
@@ -298,10 +298,10 @@ theorem Grammar.JSONSchema.mem_filter (Φ: φ → α → Prop) [DecidableRel Φ]
   case mp =>
     intro ⟨hxs, hd⟩
     apply And.intro hxs
-    rw [<- Grammar.JSONSchema.validate_commutes]
+    rw [<- Grammar.JSONmembers.validate_commutes]
     assumption
   case mpr =>
     intro ⟨hxs, hd⟩
     apply And.intro hxs
-    rw [Grammar.JSONSchema.validate_commutes]
+    rw [Grammar.JSONmembers.validate_commutes]
     assumption
