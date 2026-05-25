@@ -18,6 +18,7 @@ def Pred.pred_is_decpred {α : Type} [d: DecidableEq α] (p: Pred α): (a: α) �
     | Pred.eq y => d x y
     | Pred.any => Decidable.isTrue True.intro
 
+@[reducible]
 def Pred.decidablePredEval {α: Type} [BEq α] [d: DecidableEq α] (p: Pred α) : DecidablePred p.eval :=
   Pred.pred_is_decpred p
 

@@ -151,8 +151,6 @@ def Grammar.JSONmembers.derive (G: Grammar n φ) (Φ: φ → α → Bool)
   -- and the expression r does decrease.
   decreasing_by
     · apply decreasing_symbol (h := by assumption)
-    · apply decreasing_symbol (h := by assumption)
-    · apply decreasing_symbol (h := by assumption)
     · apply decreasing_or_l
     · apply decreasing_or_r
     · apply decreasing_concat_l

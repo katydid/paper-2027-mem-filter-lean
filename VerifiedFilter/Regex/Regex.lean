@@ -332,9 +332,6 @@ theorem derive_commutes {σ: Type} {α: Type} (Φ: σ → α → Prop) [Decidabl
   | star r1 ih1 =>
     simp only [denote_star, denote_concat, derive]
     rw [Lang.derive_star]
-    guard_target =
-      Lang.concat (denote Φ (derive (fun s a => Φ s a) r1 x)) (Lang.star (denote Φ r1))
-      = Lang.concat (Lang.derive (denote Φ r1) x) (Lang.star (denote Φ r1))
     congr
   | interleave r1 r2 ih1 ih2 =>
     simp only [denote_interleave, derive]
@@ -388,6 +385,7 @@ theorem validate_commutes {α: Type} (Φ: σ → α → Prop) [DecidableRel Φ] 
 
 -- decidableDenote shows that the derivative algorithm is decidable
 -- https://leanprover.zulipchat.com/#narrow/channel/270676-lean4/topic/restricting.20axioms
+@[reducible]
 def decidableDenote (Φ: σ → α → Prop) [DecidableRel Φ] (r: Regex σ): DecidablePred (denote Φ r) :=
   fun xs => decidable_of_decidable_of_eq (validate_commutes Φ r xs)
 

@@ -70,8 +70,7 @@ theorem Vector.tail_cons (x: α) (xs: List α) (hxs : (Array.mk (x :: xs)).size 
     exact hxs
   apply Vector.eq
   simp +arith only [Nat.add_one_sub_one, Vector.tail_eq_cast_extract, Vector.extract_mk,
-    List.extract_toArray, List.extract_eq_drop_take, List.drop_succ_cons,
-    List.drop_zero, Vector.cast_mk, Vector.toList_mk]
+    List.extract_toArray, Vector.cast_mk, Vector.toList_mk]
   subst hlen
   exact List.take_length
 

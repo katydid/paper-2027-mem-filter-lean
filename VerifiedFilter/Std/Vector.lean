@@ -133,13 +133,14 @@ theorem take_zero (xs : Vector α n):
   Vector.take xs 0 = #v[] := by
   simp only [Vector.take, Vector.take]
   simp only [Array.extract_zero]
+  rfl
 
 theorem take_nil (i: Nat):
   Vector.take #v[] i = Vector.cast (α := α) (Eq.symm (Nat.min_zero i)) #v[] := by
   induction i with
   | zero =>
     rw [take_zero]
-    simp only [Vector.cast_rfl]
+    rfl
   | succ i ih =>
     congr
 
@@ -219,10 +220,11 @@ theorem map_zip_is_zip_map {α: Type u} {β: Type v} (f: α → β) (xs: Vector 
 theorem take_append_drop_list (i : Nat) (xs : Vector α l): ((xs.take i) ++ (xs.drop i)).toList = xs.toList := by
   induction i generalizing xs l with
   | zero =>
+    rw [toList_append]
     simp only [Vector.take_zero]
     simp only [Vector.drop_zero]
-    rw [toList_append]
-    simp only [toList_mk, List.nil_append]
+    simp only [Nat.sub_zero, List.append_left_eq_self, toList_eq_nil_iff, Nat.zero_le,
+      Nat.min_eq_left]
   | succ i ih =>
     rw [toList_append]
     rw [Vector.toList_take]
