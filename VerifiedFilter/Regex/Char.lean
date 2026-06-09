@@ -46,3 +46,10 @@ theorem gen_derive: Regex.Char.derive r a = Regex.derive (fun s a => s == a) r a
   | compliment r1 ih1 =>
     simp only [Regex.Char.derive, Regex.derive]
     rw [ih1]
+
+open Regex
+
+#guard Regex.Char.derive (concat (symbol 'a') (symbol 'b')) 'a'
+  = or (concat emptystr (symbol 'b')) emptyset -- symbol 'b'
+#guard Regex.Char.derive (star (symbol 'a')) 'a'
+  = concat emptystr (star (symbol 'a')) -- star (symbol 'a')
