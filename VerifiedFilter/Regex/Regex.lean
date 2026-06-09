@@ -50,7 +50,7 @@ def unescapable :(x: Regex σ) → Bool
   | emptyset => true | compliment emptyset => true | _ => false
 
 -- onlyif (scalar operator in https://doi.org/10.1145/3473583) is a helper function use to define derivatives of regular expressions.
-def onlyif (cond: Prop) [dcond: Decidable cond] (r: Regex σ): Regex σ :=
+def onlyif (cond: Prop) [Decidable cond] (r: Regex σ): Regex σ :=
   if cond then r else emptyset
 
 -- oneOrMore is the `r+` operator for regular expressions.
