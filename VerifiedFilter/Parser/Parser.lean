@@ -6,8 +6,8 @@ import VerifiedFilter.Parser.Token
 -- TODO: explain error is in except monad and state is also in m, but could also use IO
 class Parser (m: Type -> Type u) (α: outParam Type) where
   next: m Hint
-  skip: m Unit
   token: m α
+  skip: m Unit
 
 namespace Parser
 
