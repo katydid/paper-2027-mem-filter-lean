@@ -17,11 +17,13 @@ import VerifiedFilter.Parser.Parser
 import VerifiedFilter.Parser.TokenHedge
 import VerifiedFilter.Parser.HedgeParser
 
+open Regex.Memoize (MemoizeKatydids)
+
 class FusedKatydid (m: Type -> Type u) (σ: Type) (α: Type) [DecidableEq σ] [Hashable σ] extends
   Monad m,
   MonadExcept String m,
   Parser m α,
-  Regex.Memoize.MemoizeKatydids m σ
+  MemoizeKatydids m σ
 
 abbrev Impl α σ [DecidableEq σ] [Hashable σ] β :=
   (StateT (Regex.Memoize.entersMemTable σ)
@@ -49,54 +51,42 @@ instance [DecidableEq φ] [Hashable φ] [DecidableEq α]: FusedKatydid (Impl α 
 def deriveEnter [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
   (G: Grammar n φ) (Φ: φ -> α -> Bool)
   (xs: Vector (Regex (φ × Ref n)) l): m (Vector (Regex (φ × Ref n)) (symcounts xs)) := do
-  let enters <- Regex.Memoize.MemoizeKatydids.entersM ⟨l, xs⟩
-  let enters1: Vector (φ × Ref n) (symcounts xs) := enters.1
+  let enters <- MemoizeKatydids.entersM ⟨_, xs⟩
   let token <- Parser.token
-  let childxs: Vector (Regex (φ × Ref n)) (symcounts xs) := (Vector.map (xs := enters1)
-    (fun ⟨pred, ref⟩ =>
-      if Φ pred token
-      then G.lookup ref
-      else Regex.emptyset
-    )
-  )
+  let childxs: Vector (Regex (φ × Ref n)) (symcounts xs) :=
+    (Vector.map (fun ⟨pred, ref⟩ => if Φ pred token then G.lookup ref else Regex.emptyset)) enters.1
   return childxs
 
-def deriveLeaveM [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
+def deriveLeave [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
   (xs: Vector (Regex (φ × Ref n)) l) (cs: Vector (Regex (φ × Ref n)) (symcounts xs)): m (Vector (Regex (φ × Ref n)) l) :=
-  Regex.Memoize.MemoizeKatydids.leavesM ⟨l, xs, (Vector.map (xs := cs) Regex.null)⟩
+  MemoizeKatydids.leavesM ⟨_, _, (Vector.map Regex.null cs)⟩
 
 def deriveValue [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
   (G: Grammar n φ) (Φ: φ -> α -> Bool)
   (xs: Vector (Regex (φ × Ref n)) l): m (Vector (Regex (φ × Ref n)) l) := do
-  deriveEnter G Φ xs >>= deriveLeaveM (α := α) xs
+  deriveEnter G Φ xs >>= deriveLeave (α := α) xs
 
--- TODO: Is it possible to have a Parser type that can be proved to be of the correct shape, and have not expection throwing
--- for example: can you prove that your Parser will never return an Hint.leave after returning a Hint.field.
--- This class can be called the LawfulParser.
-partial def derive [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
+partial def fusedDerive [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
   (G: Grammar n φ) (Φ: φ -> α -> Bool)
-  (xs: Vector (Regex (φ × Ref n)) l): m (Vector (Regex (φ × Ref n)) l) := do
-  if List.all xs.toList Regex.unescapable then
-    Parser.skip; return xs
+  (rs: Vector (Regex (φ × Ref n)) l): m (Vector (Regex (φ × Ref n)) l) := do
+  if Vector.all rs Regex.unescapable then Parser.skip; return rs
   match <- Parser.next with
   | Hint.field =>
-    let childxs <- deriveEnter G Φ xs -- derive enter field
-    let dchildxs <-
-      match <- Parser.next with
-      | Hint.value => deriveValue G Φ childxs -- derive child value
-      | Hint.enter => derive G Φ childxs -- derive children, until return from a Hint.leave
+    let childrs <- deriveEnter G Φ rs
+    let dchildrs <- match <- Parser.next with
+      | Hint.value => deriveValue G Φ childrs
+      | Hint.enter => fusedDerive G Φ childrs
       | hint => throw s!"unexpected {hint}"
-    let xsLeave <- deriveLeaveM (α := α) xs dchildxs -- derive leave field
-    derive G Φ xsLeave -- deriv next
-  | Hint.value => deriveValue G Φ xs >>= derive G Φ -- derive value and then derive next
-  | Hint.enter => derive G Φ xs >>= derive G Φ -- derive children, until return from a Hint.leave and then derive next
-  | Hint.leave => return xs -- never happens at the top
-  | Hint.eof => return xs -- only happens at the top
+    let rsLeave <- deriveLeave (α := α) rs dchildrs
+    fusedDerive G Φ rsLeave
+  | Hint.value => deriveValue G Φ rs >>= fusedDerive G Φ
+  | Hint.enter => fusedDerive G Φ rs >>= fusedDerive G Φ
+  | _ => return rs
 
 def validates {m} [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
   (G: Grammar n φ) (Φ: φ -> α -> Bool)
   (x: Regex (φ × Ref n)): m Bool := do
-  let dxs <- derive G Φ #v[x]
+  let dxs <- fusedDerive G Φ #v[x]
   return Regex.null dxs.head
 
 def enters.init [DecidableEq φ] [Hashable φ] {n: Nat}
