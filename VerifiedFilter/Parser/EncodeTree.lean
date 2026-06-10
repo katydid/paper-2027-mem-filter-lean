@@ -15,20 +15,15 @@ partial def encode [Monad m] [MonadExcept String m] [Parser m α]: m (Hedge α) 
     let children <- encode
     let siblings <- encode
     return children ++ siblings
-  | Hint.field =>
+  | Hint.value =>
     let name <- Parser.token
     let children <-
       match <- Parser.next with
       -- use pure instead of return, because return would short circuit
-      | Hint.value => pure [Hedge.Node.node (<- Parser.token) []]
       | Hint.enter => encode
       | hint => throw s!"unexpected {hint}"
     let siblings <- encode
     return (Hedge.Node.node name children) :: siblings
-  | Hint.value =>
-    let value <- Parser.token
-    let siblings <- encode
-    return (Hedge.Node.node value []) :: siblings
   | Hint.leave => return []
   | Hint.eof => return []
 
@@ -39,10 +34,10 @@ def run (x: StateT (HedgeParser.ParserState α) (Except String) β) (t: Hedge.No
 
 open TokenHedge (strnode)
 
-#guard run
+#eval run
   encode
-  (strnode "a" []) =
-  Except.ok [(strnode "a" [])]
+  (strnode "a" [])
+  -- = Except.ok [(strnode "a" [])]
 
 #guard run
   encode

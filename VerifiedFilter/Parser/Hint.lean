@@ -1,4 +1,4 @@
-inductive Hint where | enter | leave | field | value | eof
+inductive Hint where | enter | leave | value | eof
   deriving Repr, DecidableEq
 
 instance : ToString Hint :=
@@ -6,7 +6,6 @@ instance : ToString Hint :=
     match h with
     | Hint.enter => "{"
     | Hint.leave => "}"
-    | Hint.field => "F"
     | Hint.value => "V"
     | Hint.eof => "$"
   ⟩

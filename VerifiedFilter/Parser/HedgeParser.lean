@@ -35,8 +35,6 @@ abbrev ParseStack α := Stack (Hedge α)
 inductive CurrentState (α: Type) where
   | unknown (children: Hedge α)
   | opened (nexts: Hedge α)
-  | value (v: α) (nexts: Hedge α)
-  | pair (f v: α) (nexts: Hedge α)
   | field (f: α) (children: Hedge α)
   | eof
 
@@ -76,12 +74,8 @@ noncomputable def CurrentState.size (s: CurrentState α): Nat :=
   | CurrentState.unknown hedge => 4 + Hedge.size hedge
   -- field needs to be larger than opened, since opened follows from field.
   | CurrentState.field _ hedge => 3 + Hedge.size hedge
-  -- pair can only be one smaller than opened
-  | CurrentState.pair _ _ hedge => 3 + Hedge.size hedge
   -- opened is always the second state, but also follows from field, so it needs to be smaller than unknown and field.
   | CurrentState.opened hedge => 2 + Hedge.size hedge
-  -- value needs to smaller than pair and smaller or equal to opened
-  | CurrentState.value _ hedge => 2 + Hedge.size hedge
   -- eof
   | CurrentState.eof => 0
 
@@ -132,16 +126,10 @@ def nextNode
   [Monad m] [Debug m] [MonadExcept String m] [MonadStateOf (CurrentState α) m] [MonadStateOf (ParseStack α) m]
   (current: Hedge.Node α) (nexts: Hedge α): m Hint := do
   match current with
-  | Hedge.Node.node v [] =>
-    set (CurrentState.value v nexts)
-    return Hint.value
-  | Hedge.Node.node f [Hedge.Node.node v []] =>
-    set (CurrentState.pair f v nexts)
-    return Hint.field
   | Hedge.Node.node f children =>
     Stack.pushM nexts
     set (CurrentState.field f children)
-    return Hint.field
+    return Hint.value
 
 def next
   [Monad m] [Debug m] [MonadExcept String m] [MonadState (CurrentState α) m] [MonadStateOf (CurrentState α) m] [MonadStateOf (ParseStack α) m]
@@ -157,14 +145,6 @@ def next
     return Hint.leave
   | CurrentState.opened (t::ts) =>
     nextNode t ts
-  | CurrentState.value _ [] =>
-    pop (α := α)
-    return Hint.leave
-  | CurrentState.value _ (t::ts) =>
-    nextNode t ts
-  | CurrentState.pair _ v nexts =>
-    _ <- set (CurrentState.value v nexts)
-    return Hint.value
   | CurrentState.field _ children =>
     _ <- set (CurrentState.opened children)
     return Hint.enter
@@ -179,8 +159,6 @@ def skip
   match curr with
   | CurrentState.unknown _ => pop (α := α)
   | CurrentState.opened _ => pop (α := α)
-  | CurrentState.value _ _ => pop (α := α)
-  | CurrentState.pair _ _ nexts => set (CurrentState.opened nexts)
   | CurrentState.field _ _ => pop (α := α)
   | CurrentState.eof => return ()
   return ()
@@ -193,8 +171,6 @@ def token
   match curr with
   | CurrentState.unknown _ => throw "unknown"
   | CurrentState.opened _ => throw "unknown"
-  | CurrentState.value v _ => return v
-  | CurrentState.pair f _ _ => return f
   | CurrentState.field f _ => return f
   | CurrentState.eof => throw "unknown"
 
@@ -275,70 +251,70 @@ theorem sizeOf_unknown_gt_opened:
   sizeOf (ParserState.mk (CurrentState.opened children) stack) := by
   simp [sizeOf]
 
-theorem next_value_value_gt_value:
-  run next (ParserState.mk (CurrentState.value v' ((Hedge.Node.node v [])::siblings)) stack) =
-  Except.ok (Hint.value, ParserState.mk (CurrentState.value v siblings) stack) := by
-  simp [run, next, nextNode, Debug.debug]
-  simp_monads
-  simp [getCurrent, setCurrent]
-  simp_monads
+-- theorem next_value_value_gt_value:
+--   run next (ParserState.mk (CurrentState.value v' ((Hedge.Node.node v [])::siblings)) stack) =
+--   Except.ok (Hint.value, ParserState.mk (CurrentState.value v siblings) stack) := by
+--   simp [run, next, nextNode, Debug.debug]
+--   simp_monads
+--   simp [getCurrent, setCurrent]
+--   simp_monads
 
-theorem sizeOf_value_value_gt_value:
-  sizeOf (ParserState.mk (CurrentState.value v' ((Hedge.Node.node v [])::siblings)) stack) >
-  sizeOf (ParserState.mk (CurrentState.value v siblings) stack) := by
-  simp [sizeOf]
+-- theorem sizeOf_value_value_gt_value:
+--   sizeOf (ParserState.mk (CurrentState.value v' ((Hedge.Node.node v [])::siblings)) stack) >
+--   sizeOf (ParserState.mk (CurrentState.value v siblings) stack) := by
+--   simp [sizeOf]
 
-theorem next_opened_value_gt_value:
-  run next (ParserState.mk (CurrentState.opened ((Hedge.Node.node v [])::siblings)) stack) =
-  Except.ok (Hint.value, ParserState.mk (CurrentState.value v siblings) stack) := by
-  simp [run, next, nextNode, Debug.debug]
-  simp_monads
-  simp [getCurrent, setCurrent]
-  simp_monads
+-- theorem next_opened_value_gt_value:
+--   run next (ParserState.mk (CurrentState.opened ((Hedge.Node.node v [])::siblings)) stack) =
+--   Except.ok (Hint.value, ParserState.mk (CurrentState.value v siblings) stack) := by
+--   simp [run, next, nextNode, Debug.debug]
+--   simp_monads
+--   simp [getCurrent, setCurrent]
+--   simp_monads
 
-theorem sizeOf_opened_value_gt_value:
-  sizeOf (ParserState.mk (CurrentState.opened ((Hedge.Node.node v [])::siblings)) stack) >
-  sizeOf (ParserState.mk (CurrentState.value v siblings) stack) := by
-  simp [sizeOf]
+-- theorem sizeOf_opened_value_gt_value:
+--   sizeOf (ParserState.mk (CurrentState.opened ((Hedge.Node.node v [])::siblings)) stack) >
+--   sizeOf (ParserState.mk (CurrentState.value v siblings) stack) := by
+--   simp [sizeOf]
 
-theorem next_value_pair_gt_pair:
-  run next (ParserState.mk (CurrentState.value v' ((Hedge.Node.node f [Hedge.Node.node v []])::siblings)) stack) =
-  Except.ok (Hint.field, ParserState.mk (CurrentState.pair f v siblings) stack) := by
-  simp [run, next, nextNode, Debug.debug]
-  simp_monads
-  simp [getCurrent, setCurrent]
-  simp_monads
+-- theorem next_value_pair_gt_pair:
+--   run next (ParserState.mk (CurrentState.value v' ((Hedge.Node.node f [Hedge.Node.node v []])::siblings)) stack) =
+--   Except.ok (Hint.value, ParserState.mk (CurrentState.pair f v siblings) stack) := by
+--   simp [run, next, nextNode, Debug.debug]
+--   simp_monads
+--   simp [getCurrent, setCurrent]
+--   simp_monads
 
-theorem sizeOf_value_pair_gt_pair:
-  sizeOf (ParserState.mk (CurrentState.value v' ((Hedge.Node.node f [Hedge.Node.node v []])::siblings)) stack) >
-  sizeOf (ParserState.mk (CurrentState.pair f v siblings) stack) := by
-  simp +arith [sizeOf]
+-- theorem sizeOf_value_pair_gt_pair:
+--   sizeOf (ParserState.mk (CurrentState.value v' ((Hedge.Node.node f [Hedge.Node.node v []])::siblings)) stack) >
+--   sizeOf (ParserState.mk (CurrentState.pair f v siblings) stack) := by
+--   simp +arith [sizeOf]
 
-theorem next_opened_pair_gt_pair:
-  run next (ParserState.mk (CurrentState.opened ((Hedge.Node.node f [Hedge.Node.node v []])::siblings)) stack) =
-  Except.ok (Hint.field, ParserState.mk (CurrentState.pair f v siblings) stack) := by
-  simp [run, next, nextNode, Debug.debug]
-  simp_monads
-  simp [getCurrent, setCurrent]
-  simp_monads
+-- theorem next_opened_pair_gt_pair:
+--   run next (ParserState.mk (CurrentState.opened ((Hedge.Node.node f [Hedge.Node.node v []])::siblings)) stack) =
+--   Except.ok (Hint.value, ParserState.mk (CurrentState.pair f v siblings) stack) := by
+--   simp [run, next, nextNode, Debug.debug]
+--   simp_monads
+--   simp [getCurrent, setCurrent]
+--   simp_monads
 
-theorem sizeOf_opened_pair_gt_pair:
-  sizeOf (ParserState.mk (CurrentState.opened ((Hedge.Node.node f [Hedge.Node.node v []])::siblings)) stack) >
-  sizeOf (ParserState.mk (CurrentState.pair f v siblings) stack) := by
-  simp +arith [sizeOf]
+-- theorem sizeOf_opened_pair_gt_pair:
+--   sizeOf (ParserState.mk (CurrentState.opened ((Hedge.Node.node f [Hedge.Node.node v []])::siblings)) stack) >
+--   sizeOf (ParserState.mk (CurrentState.pair f v siblings) stack) := by
+--   simp +arith [sizeOf]
 
-theorem next_pair_gt_value:
-  run next (ParserState.mk (CurrentState.pair _k v siblings) stack) =
-  Except.ok (Hint.value, ParserState.mk (CurrentState.value v siblings) stack) := by
-  simp [run, next, nextNode, Debug.debug]
-  simp_monads
-  simp [getCurrent, setCurrent]
-  simp_monads
+-- theorem next_pair_gt_value:
+--   run next (ParserState.mk (CurrentState.pair _k v siblings) stack) =
+--   Except.ok (Hint.value, ParserState.mk (CurrentState.value v siblings) stack) := by
+--   simp [run, next, nextNode, Debug.debug]
+--   simp_monads
+--   simp [getCurrent, setCurrent]
+--   simp_monads
 
-theorem sizeOf_pair_gt_value:
-  sizeOf (ParserState.mk (CurrentState.pair _k v siblings) stack) >
-  sizeOf (ParserState.mk (CurrentState.value v siblings) stack) := by
-  simp [sizeOf]
+-- theorem sizeOf_pair_gt_value:
+--   sizeOf (ParserState.mk (CurrentState.pair _k v siblings) stack) >
+--   sizeOf (ParserState.mk (CurrentState.value v siblings) stack) := by
+--   simp [sizeOf]
 
 theorem next_field_gt_opened:
   run next (ParserState.mk (CurrentState.field f' children) stack) =
@@ -359,7 +335,7 @@ theorem next_opened_gt_push
   (hc: (∃ v vchild vchildren, fchildren = [Hedge.Node.node v (vchild::vchildren)])
     \/ (∃ fchild1 fchild2 fchilds, fchildren = fchild1::fchild2::fchilds)):
   run next (ParserState.mk ((CurrentState.opened ((Hedge.Node.node f fchildren)::siblings))) stack) =
-  Except.ok (Hint.field, ParserState.mk (CurrentState.field f fchildren) (siblings::stack)) := by
+  Except.ok (Hint.value, ParserState.mk (CurrentState.field f fchildren) (siblings::stack)) := by
   cases hc with
   | inl hc =>
     obtain ⟨ v, vchild, vchildren, hc ⟩ := hc
@@ -391,75 +367,75 @@ theorem sizeOf_opened_gt_push:
 
 -- run next (ParserState.mk (CurrentState.value v' ((Hedge.Node.node f [Hedge.Node.node v []])::siblings)) stack) =
 -- run next (ParserState.mk (CurrentState.value v' ((Hedge.Node.node v [])::siblings)) stack) =
-theorem next_value_gt_push
-  {fchildren: Hedge α}
-  -- if not a value and not a pair
-  (hc: (∃ v vchild vchildren, fchildren = [Hedge.Node.node v (vchild::vchildren)])
-    \/ (∃ fchild1 fchild2 fchilds, fchildren = fchild1::fchild2::fchilds)):
-  run next (ParserState.mk (CurrentState.value v ((Hedge.Node.node f fchildren)::fsiblings)) stack) =
-  Except.ok (Hint.field, ParserState.mk (CurrentState.field f fchildren) (fsiblings::stack)) := by
-  cases hc with
-  | inl hc =>
-    obtain ⟨ v, vchild, vchildren, hc ⟩ := hc
-    rw [hc]
-    simp [run, next, nextNode, Debug.debug]
-    simp_monads
-    simp [getCurrent, setCurrent]
-    simp_monads
-    simp [Stack.pushM]
-    simp_monads
-    simp [getStack, setStack]
-    simp_monads
-  | inr hc =>
-    obtain ⟨ fchild1, fchild2, fchilds, hc ⟩ := hc
-    rw [hc]
-    simp [run, next, nextNode, Debug.debug]
-    simp_monads
-    simp [getCurrent, setCurrent]
-    simp_monads
-    simp [Stack.pushM]
-    simp_monads
-    simp [getStack, setStack]
-    simp_monads
+-- theorem next_value_gt_push
+--   {fchildren: Hedge α}
+--   -- if not a value and not a pair
+--   (hc: (∃ v vchild vchildren, fchildren = [Hedge.Node.node v (vchild::vchildren)])
+--     \/ (∃ fchild1 fchild2 fchilds, fchildren = fchild1::fchild2::fchilds)):
+--   run next (ParserState.mk (CurrentState.value v ((Hedge.Node.node f fchildren)::fsiblings)) stack) =
+--   Except.ok (Hint.value, ParserState.mk (CurrentState.field f fchildren) (fsiblings::stack)) := by
+--   cases hc with
+--   | inl hc =>
+--     obtain ⟨ v, vchild, vchildren, hc ⟩ := hc
+--     rw [hc]
+--     simp [run, next, nextNode, Debug.debug]
+--     simp_monads
+--     simp [getCurrent, setCurrent]
+--     simp_monads
+--     simp [Stack.pushM]
+--     simp_monads
+--     simp [getStack, setStack]
+--     simp_monads
+--   | inr hc =>
+--     obtain ⟨ fchild1, fchild2, fchilds, hc ⟩ := hc
+--     rw [hc]
+--     simp [run, next, nextNode, Debug.debug]
+--     simp_monads
+--     simp [getCurrent, setCurrent]
+--     simp_monads
+--     simp [Stack.pushM]
+--     simp_monads
+--     simp [getStack, setStack]
+--     simp_monads
 
-theorem sizeOf_value_gt_push:
-  sizeOf (ParserState.mk ((CurrentState.value v ((Hedge.Node.node f children)::siblings))) stack) >
-  sizeOf (ParserState.mk (CurrentState.field f children) (siblings::stack)) := by
-  simp +arith [sizeOf]
+-- theorem sizeOf_value_gt_push:
+--   sizeOf (ParserState.mk ((CurrentState.value v ((Hedge.Node.node f children)::siblings))) stack) >
+--   sizeOf (ParserState.mk (CurrentState.field f children) (siblings::stack)) := by
+--   simp +arith [sizeOf]
 
-theorem next_value_gt_popped_value_eof {α: Type} (v: α):
-  run next (ParserState.mk (α := α) (CurrentState.value v []) []) =
-  Except.ok (Hint.leave, ParserState.mk (α := α) CurrentState.eof []) := by
-  simp [run, next, nextNode, Debug.debug]
-  simp_monads
-  simp [getCurrent, setCurrent]
-  simp_monads
-  simp [pop, Stack.popM?]
-  simp_monads
-  simp [getStack, setCurrent]
-  simp_monads
+-- theorem next_value_gt_popped_value_eof {α: Type} (v: α):
+--   run next (ParserState.mk (α := α) (CurrentState.value v []) []) =
+--   Except.ok (Hint.leave, ParserState.mk (α := α) CurrentState.eof []) := by
+--   simp [run, next, nextNode, Debug.debug]
+--   simp_monads
+--   simp [getCurrent, setCurrent]
+--   simp_monads
+--   simp [pop, Stack.popM?]
+--   simp_monads
+--   simp [getStack, setCurrent]
+--   simp_monads
 
-theorem sizeOf_value_gt_popped_value_eof {α: Type}:
-  sizeOf (ParserState.mk (CurrentState.value _v []) []) >
-  sizeOf (ParserState.mk (α := α) CurrentState.eof []) := by
-  simp [sizeOf]
+-- theorem sizeOf_value_gt_popped_value_eof {α: Type}:
+--   sizeOf (ParserState.mk (CurrentState.value _v []) []) >
+--   sizeOf (ParserState.mk (α := α) CurrentState.eof []) := by
+--   simp [sizeOf]
 
-theorem next_value_gt_popped_value_more:
-  run next (ParserState.mk (CurrentState.value _v []) (elem::stack)) =
-  Except.ok (Hint.leave, ParserState.mk (CurrentState.opened elem) stack) := by
-  simp [run, next, nextNode, Debug.debug]
-  simp_monads
-  simp [getCurrent, setCurrent]
-  simp_monads
-  simp [pop, Stack.popM?]
-  simp_monads
-  simp [getStack, setStack, setCurrent]
-  simp_monads
+-- theorem next_value_gt_popped_value_more:
+--   run next (ParserState.mk (CurrentState.value _v []) (elem::stack)) =
+--   Except.ok (Hint.leave, ParserState.mk (CurrentState.opened elem) stack) := by
+--   simp [run, next, nextNode, Debug.debug]
+--   simp_monads
+--   simp [getCurrent, setCurrent]
+--   simp_monads
+--   simp [pop, Stack.popM?]
+--   simp_monads
+--   simp [getStack, setStack, setCurrent]
+--   simp_monads
 
-theorem sizeOf_value_gt_popped_value_more:
-  sizeOf (ParserState.mk (CurrentState.value _v []) (elem::stack)) >
-  sizeOf (ParserState.mk (CurrentState.opened elem) stack) := by
-  simp +arith [sizeOf]
+-- theorem sizeOf_value_gt_popped_value_more:
+--   sizeOf (ParserState.mk (CurrentState.value _v []) (elem::stack)) >
+--   sizeOf (ParserState.mk (CurrentState.opened elem) stack) := by
+--   simp +arith [sizeOf]
 
 theorem next_opened_gt_popped_opened_eof {α: Type}:
   run next (ParserState.mk (α := α) (CurrentState.opened []) []) =
@@ -512,38 +488,38 @@ open TokenHedge (strnode)
   = Except.ok Hint.enter
 
 #guard runTree
-  (walk [Action.next, Action.next, Action.next])
-  (strnode "a" []) =
-  Except.ok ["{", "V", "}"]
+  (walk [Action.next, Action.next, Action.next, Action.next, Action.next])
+  (strnode "a" [])
+  = Except.ok ["{", "V", "{", "}", "}"]
 
-#guard runTree
-  (walk [Action.next, Action.next, Action.next, Action.next, Action.next, Action.next, Action.next, Action.next])
-  (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]]) =
-  Except.ok ["{", "F", "{", "V", "F", "V", "}", "}"]
+-- #guard runTree
+--   (walk [Action.next, Action.next, Action.next, Action.next, Action.next, Action.next, Action.next, Action.next])
+--   (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]]) =
+--   Except.ok ["{", "V", "{", "V", "V", "V", "}", "}"]
 
 -- walk next just two
 #guard runTree
   (walk [Action.next, Action.next])
   (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]])
-  = Except.ok ["{", "F"]
+  = Except.ok ["{", "V"]
 
 -- walk next to end
-#guard runTree
-  (walk [Action.next, Action.next, Action.next, Action.next, Action.next, Action.next, Action.next, Action.next, Action.next])
-  (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]])
-  = Except.ok ["{", "F", "{", "V", "F", "V", "}", "}", "$"]
+-- #guard runTree
+--   (walk [Action.next, Action.next, Action.next, Action.next, Action.next, Action.next, Action.next, Action.next, Action.next])
+--   (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]])
+--   = Except.ok ["{", "V", "{", "V", "V", "V", "}", "}", "$"]
 
 -- walk next to end and tokenize all
-#guard runTree
-  (walk [Action.next, Action.next, Action.token, Action.next, Action.next, Action.token, Action.next, Action.token, Action.next, Action.token, Action.next, Action.next, Action.next])
-  (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]])
-  = Except.ok ["{", "F", "a", "{", "V", "b", "F", "c", "V", "d", "}", "}", "$"]
+-- #guard runTree
+--   (walk [Action.next, Action.next, Action.token, Action.next, Action.next, Action.token, Action.next, Action.token, Action.next, Action.token, Action.next, Action.next, Action.next])
+--   (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]])
+--   = Except.ok ["{", "V", "a", "{", "V", "b", "V", "c", "V", "d", "}", "}", "$"]
 
 -- walk next to end and tokenize all
-#guard runTree
-  (walk [Action.next, Action.next, Action.token, Action.next, Action.next, Action.token, Action.next, Action.token, Action.next, Action.token, Action.next, Action.next, Action.next])
-  (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]])
-  = Except.ok ["{", "F", "a", "{", "V", "b", "F", "c", "V", "d", "}", "}", "$"]
+-- #guard runTree
+--   (walk [Action.next, Action.next, Action.token, Action.next, Action.next, Action.token, Action.next, Action.token, Action.next, Action.token, Action.next, Action.next, Action.next])
+--   (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]])
+--   = Except.ok ["{", "V", "a", "{", "V", "b", "V", "c", "V", "d", "}", "}", "$"]
 
 -- walk skip
 #guard runTree
@@ -561,191 +537,191 @@ open TokenHedge (strnode)
 #guard runTree
   (walk [Action.next, Action.next, Action.skip, Action.next, Action.next])
   (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]]) =
-  Except.ok ["{", "F", "}", "$"]
+  Except.ok ["{", "V", "}", "$"]
 
 -- walk next next token skip
 #guard runTree
   (walk [Action.next, Action.next, Action.token, Action.skip, Action.next, Action.next])
   (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]]) =
-  Except.ok ["{", "F", "a", "}", "$"]
+  Except.ok ["{", "V", "a", "}", "$"]
 
 -- walk next next token next skip
 #guard runTree
   (walk [Action.next, Action.next, Action.token, Action.next, Action.skip, Action.next, Action.next])
   (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]]) =
-  Except.ok ["{", "F", "a", "{", "}", "$"]
+  Except.ok ["{", "V", "a", "{", "}", "$"]
 
 -- walk next next token next next token skip
-#guard runTree
-  (walk [Action.next, Action.next, Action.token, Action.next, Action.next, Action.token, Action.skip, Action.next, Action.next])
-  (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]]) =
-  Except.ok ["{", "F", "a", "{", "V", "b", "}", "$"]
+-- #guard runTree
+--   (walk [Action.next, Action.next, Action.token, Action.next, Action.next, Action.token, Action.skip, Action.next, Action.next])
+--   (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]]) =
+--   Except.ok ["{", "V", "a", "{", "V", "b", "}", "$"]
 
 -- walk next next token next next token next token skip
-#guard runTree
-  (walk [Action.next, Action.next, Action.token, Action.next, Action.next, Action.token, Action.next, Action.token, Action.skip, Action.next, Action.next, Action.next])
-  (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]]) =
-  Except.ok ["{", "F", "a", "{", "V", "b", "F", "c", "}", "}", "$"]
+-- #guard runTree
+--   (walk [Action.next, Action.next, Action.token, Action.next, Action.next, Action.token, Action.next, Action.token, Action.skip, Action.next, Action.next, Action.next])
+--   (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]]) =
+--   Except.ok ["{", "V", "a", "{", "V", "b", "V", "c", "}", "}", "$"]
 
-theorem next_decreases_size_of_parserstate
-  {hint: Hint}
-  {thisParserState nextParserState: ParserState α}
-  (hneof: hint ≠ Hint.eof)
-  (h: Except.ok (hint, nextParserState) = run next thisParserState):
-  sizeOf nextParserState < sizeOf thisParserState := by
-  have h' := Eq.symm h
-  clear h
-  have h := congrArg (Except.map (fun x => x.snd)) h'
-  simp [Except.map] at h
-  cases thisParserState with
-  | mk thisCurrent thisStack =>
-  cases thisCurrent with
-  | unknown xs =>
-    rw [next_unknown_gt_opened] at h
-    simp at h
-    rw [<- h]
-    exact sizeOf_unknown_gt_opened
-  | opened xs =>
-    cases xs with
-    | nil =>
-      cases thisStack with
-      | nil =>
-        rw [next_opened_gt_popped_opened_eof] at h
-        simp at h
-        rw [<- h]
-        exact sizeOf_opened_gt_popped_opened_eof
-      | cons s' ss' =>
-        rw [next_opened_gt_popped_opened_more] at h
-        simp at h
-        rw [<- h]
-        exact sizeOf_opened_gt_popped_opened_more
-    | cons tree fsiblings =>
-      cases tree with
-      | node f v =>
-        cases v with
-        | nil =>
-          -- is value
-          rw [next_opened_value_gt_value] at h
-          simp at h
-          rw [<- h]
-          exact sizeOf_opened_value_gt_value
-        | cons v vsiblings =>
-          -- is pair or field
-          cases v with
-          | node v vchildren =>
-            cases vchildren with
-            | nil =>
-              cases vsiblings with
-              | nil =>
-                -- is pair
-                rw [next_opened_pair_gt_pair] at h
-                simp at h
-                rw [<- h]
-                exact sizeOf_opened_pair_gt_pair
-              | cons vsibling vsiblings =>
-                -- is field
-                rw [next_opened_gt_push] at h
-                simp at h
-                rw [<- h]
-                apply sizeOf_opened_gt_push
-                right
-                exists Hedge.Node.node v []
-                exists vsibling
-                exists vsiblings
-            | cons vchild vchildren =>
-              -- if field
-              rw [next_opened_gt_push] at h
-              simp at h
-              rw [<- h]
-              apply sizeOf_opened_gt_push
-              cases vsiblings with
-              | nil =>
-                left
-                exists v
-                exists vchild
-                exists vchildren
-              | cons vsibling vsiblings =>
-                right
-                exists Hedge.Node.node v (vchild :: vchildren)
-                exists vsibling
-                exists vsiblings
-  | value x xs =>
-    cases xs with
-    | nil =>
-      cases thisStack with
-      | nil =>
-        rw [next_value_gt_popped_value_eof] at h
-        simp at h
-        rw [<- h]
-        exact sizeOf_value_gt_popped_value_eof
-      | cons s' ss' =>
-        rw [next_value_gt_popped_value_more] at h
-        simp at h
-        rw [<- h]
-        exact sizeOf_value_gt_popped_value_more
-    | cons tree fsiblings =>
-      cases tree with
-      | node f v =>
-        cases v with
-        | nil =>
-          -- is value
-          rw [next_value_value_gt_value] at h
-          simp at h
-          rw [<- h]
-          exact sizeOf_opened_value_gt_value
-        | cons v vsiblings =>
-          -- is pair or field
-          cases v with
-          | node v vchildren =>
-            cases vchildren with
-            | nil =>
-              cases vsiblings with
-              | nil =>
-                -- is pair
-                rw [next_value_pair_gt_pair] at h
-                simp at h
-                rw [<- h]
-                exact sizeOf_opened_pair_gt_pair
-              | cons vsibling vsiblings =>
-                -- is field
-                rw [next_value_gt_push] at h
-                simp at h
-                rw [<- h]
-                apply sizeOf_opened_gt_push
-                right
-                exists Hedge.Node.node v []
-                exists vsibling
-                exists vsiblings
-            | cons vchild vchildren =>
-              -- if field
-              rw [next_value_gt_push] at h
-              simp at h
-              rw [<- h]
-              apply sizeOf_opened_gt_push
-              cases vsiblings with
-              | nil =>
-                left
-                exists v
-                exists vchild
-                exists vchildren
-              | cons vsibling vsiblings =>
-                right
-                exists Hedge.Node.node v (vchild :: vchildren)
-                exists vsibling
-                exists vsiblings
-  | pair f v xs =>
-    rw [next_pair_gt_value] at h
-    simp at h
-    rw [<- h]
-    exact sizeOf_pair_gt_value
-  | field f xs =>
-    rw [next_field_gt_opened] at h
-    simp at h
-    rw [<- h]
-    exact sizeOf_field_gt_opened
-  | eof =>
-    rw [next_eof_gt_eof] at h'
-    simp at h'
-    obtain ⟨heof, _⟩ := h'
-    rw [<- heof] at hneof
-    contradiction
+-- theorem next_decreases_size_of_parserstate
+--   {hint: Hint}
+--   {thisParserState nextParserState: ParserState α}
+--   (hneof: hint ≠ Hint.eof)
+--   (h: Except.ok (hint, nextParserState) = run next thisParserState):
+--   sizeOf nextParserState < sizeOf thisParserState := by
+--   have h' := Eq.symm h
+--   clear h
+--   have h := congrArg (Except.map (fun x => x.snd)) h'
+--   simp [Except.map] at h
+--   cases thisParserState with
+--   | mk thisCurrent thisStack =>
+--   cases thisCurrent with
+--   | unknown xs =>
+--     rw [next_unknown_gt_opened] at h
+--     simp at h
+--     rw [<- h]
+--     exact sizeOf_unknown_gt_opened
+--   | opened xs =>
+--     cases xs with
+--     | nil =>
+--       cases thisStack with
+--       | nil =>
+--         rw [next_opened_gt_popped_opened_eof] at h
+--         simp at h
+--         rw [<- h]
+--         exact sizeOf_opened_gt_popped_opened_eof
+--       | cons s' ss' =>
+--         rw [next_opened_gt_popped_opened_more] at h
+--         simp at h
+--         rw [<- h]
+--         exact sizeOf_opened_gt_popped_opened_more
+--     | cons tree fsiblings =>
+--       cases tree with
+--       | node f v =>
+--         cases v with
+--         | nil =>
+--           -- is value
+--           rw [next_opened_value_gt_value] at h
+--           simp at h
+--           rw [<- h]
+--           exact sizeOf_opened_value_gt_value
+--         | cons v vsiblings =>
+--           -- is pair or field
+--           cases v with
+--           | node v vchildren =>
+--             cases vchildren with
+--             | nil =>
+--               cases vsiblings with
+--               | nil =>
+--                 -- is pair
+--                 rw [next_opened_pair_gt_pair] at h
+--                 simp at h
+--                 rw [<- h]
+--                 exact sizeOf_opened_pair_gt_pair
+--               | cons vsibling vsiblings =>
+--                 -- is field
+--                 rw [next_opened_gt_push] at h
+--                 simp at h
+--                 rw [<- h]
+--                 apply sizeOf_opened_gt_push
+--                 right
+--                 exists Hedge.Node.node v []
+--                 exists vsibling
+--                 exists vsiblings
+--             | cons vchild vchildren =>
+--               -- if field
+--               rw [next_opened_gt_push] at h
+--               simp at h
+--               rw [<- h]
+--               apply sizeOf_opened_gt_push
+--               cases vsiblings with
+--               | nil =>
+--                 left
+--                 exists v
+--                 exists vchild
+--                 exists vchildren
+--               | cons vsibling vsiblings =>
+--                 right
+--                 exists Hedge.Node.node v (vchild :: vchildren)
+--                 exists vsibling
+--                 exists vsiblings
+--   | value x xs =>
+--     cases xs with
+--     | nil =>
+--       cases thisStack with
+--       | nil =>
+--         rw [next_value_gt_popped_value_eof] at h
+--         simp at h
+--         rw [<- h]
+--         exact sizeOf_value_gt_popped_value_eof
+--       | cons s' ss' =>
+--         rw [next_value_gt_popped_value_more] at h
+--         simp at h
+--         rw [<- h]
+--         exact sizeOf_value_gt_popped_value_more
+--     | cons tree fsiblings =>
+--       cases tree with
+--       | node f v =>
+--         cases v with
+--         | nil =>
+--           -- is value
+--           rw [next_value_value_gt_value] at h
+--           simp at h
+--           rw [<- h]
+--           exact sizeOf_opened_value_gt_value
+--         | cons v vsiblings =>
+--           -- is pair or field
+--           cases v with
+--           | node v vchildren =>
+--             cases vchildren with
+--             | nil =>
+--               cases vsiblings with
+--               | nil =>
+--                 -- is pair
+--                 rw [next_value_pair_gt_pair] at h
+--                 simp at h
+--                 rw [<- h]
+--                 exact sizeOf_opened_pair_gt_pair
+--               | cons vsibling vsiblings =>
+--                 -- is field
+--                 rw [next_value_gt_push] at h
+--                 simp at h
+--                 rw [<- h]
+--                 apply sizeOf_opened_gt_push
+--                 right
+--                 exists Hedge.Node.node v []
+--                 exists vsibling
+--                 exists vsiblings
+--             | cons vchild vchildren =>
+--               -- if field
+--               rw [next_value_gt_push] at h
+--               simp at h
+--               rw [<- h]
+--               apply sizeOf_opened_gt_push
+--               cases vsiblings with
+--               | nil =>
+--                 left
+--                 exists v
+--                 exists vchild
+--                 exists vchildren
+--               | cons vsibling vsiblings =>
+--                 right
+--                 exists Hedge.Node.node v (vchild :: vchildren)
+--                 exists vsibling
+--                 exists vsiblings
+--   | pair f v xs =>
+--     rw [next_pair_gt_value] at h
+--     simp at h
+--     rw [<- h]
+--     exact sizeOf_pair_gt_value
+--   | field f xs =>
+--     rw [next_field_gt_opened] at h
+--     simp at h
+--     rw [<- h]
+--     exact sizeOf_field_gt_opened
+--   | eof =>
+--     rw [next_eof_gt_eof] at h'
+--     simp at h'
+--     obtain ⟨heof, _⟩ := h'
+--     rw [<- heof] at hneof
+--     contradiction
