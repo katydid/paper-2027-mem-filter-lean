@@ -1,4 +1,5 @@
 import VerifiedFilter.Grammar.Denote
+import VerifiedFilter.Grammar.Fused
 import VerifiedFilter.Grammar.Grammar
 import VerifiedFilter.Grammar.GrammarExamples
 import VerifiedFilter.Grammar.Katydid

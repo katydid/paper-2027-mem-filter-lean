@@ -19,3 +19,6 @@ abbrev RegexID.cast_assoc (r: RegexID (n + symcount r1 + symcount r2)): RegexID 
   have h : (n + symcount r1 + symcount r2) = n + (symcount r1 + symcount r2) := by
     rw [<- Nat.add_assoc]
   RegexID.cast r h
+
+def RegexID.casts (rs: Vector (RegexID n) l) (h: n = m): Vector (RegexID m) l :=
+  Vector.map (fun r => RegexID.cast r h) rs

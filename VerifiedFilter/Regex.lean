@@ -1,8 +1,10 @@
 import VerifiedFilter.Regex.Char
 import VerifiedFilter.Regex.ExtractReplace
 import VerifiedFilter.Regex.Extract
+import VerifiedFilter.Regex.Extracts
 import VerifiedFilter.Regex.IfExpr
 import VerifiedFilter.Regex.Katydid
+import VerifiedFilter.Regex.Katydids
 import VerifiedFilter.Regex.Lang
 import VerifiedFilter.Regex.Map
 import VerifiedFilter.Regex.Memoize
@@ -10,4 +12,6 @@ import VerifiedFilter.Regex.Point
 import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.RegexID
 import VerifiedFilter.Regex.Replace
+import VerifiedFilter.Regex.Replaces
 import VerifiedFilter.Regex.SymCount
+import VerifiedFilter.Regex.SymCounts
