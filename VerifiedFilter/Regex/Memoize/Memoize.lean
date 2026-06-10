@@ -6,8 +6,6 @@
 import VerifiedFilter.Std.Vector
 import VerifiedFilter.Std.Memoize.Memoize
 
-import VerifiedFilter.Regex.ExtractReplace
-import VerifiedFilter.Regex.Lang
 import VerifiedFilter.Regex.SymCount
 import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.Katydid
