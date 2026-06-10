@@ -1,9 +1,4 @@
-inductive Hint where
-  | enter
-  | leave
-  | field
-  | value
-  | eof
+inductive Hint where | enter | leave | field | value | eof
   deriving Repr, DecidableEq
 
 instance : ToString Hint :=
