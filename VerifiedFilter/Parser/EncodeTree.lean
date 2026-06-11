@@ -17,15 +17,11 @@ partial def encode [Monad m] [MonadExcept String m] [Parser m α]: m (Hedge α) 
     return children ++ siblings
   | Hint.value =>
     let name <- Parser.token
-    let children <-
-      match <- Parser.next with
-      -- use pure instead of return, because return would short circuit
-      | Hint.enter => encode
-      | hint => throw s!"unexpected {hint}"
+    _ <- Parser.next
+    let children <- encode
     let siblings <- encode
     return (Hedge.Node.node name children) :: siblings
-  | Hint.leave => return []
-  | Hint.eof => return []
+  | _ => return []
 
 def run (x: StateT (HedgeParser.ParserState α) (Except String) β) (t: Hedge.Node α): Except String β :=
   StateT.run' x (HedgeParser.ParserState.mk' t)
@@ -34,17 +30,17 @@ def run (x: StateT (HedgeParser.ParserState α) (Except String) β) (t: Hedge.No
 
 open TokenHedge (strnode)
 
-#eval run
+#guard run
   encode
   (strnode "a" [])
-  -- = Except.ok [(strnode "a" [])]
+  = Except.ok [(strnode "a" [])]
 
 #guard run
   encode
-  (strnode "a" [strnode "b" []]) =
-  Except.ok [(strnode "a" [strnode "b" []])]
+  (strnode "a" [strnode "b" []])
+  = Except.ok [(strnode "a" [strnode "b" []])]
 
 #guard run
   encode
-  (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]]) =
-  Except.ok [strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]]]
+  (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]])
+  = Except.ok [strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]]]
