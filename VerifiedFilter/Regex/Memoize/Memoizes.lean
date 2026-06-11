@@ -1,8 +1,3 @@
--- Here we define the memoized Katydid algorithm over regular expressions.
--- We define
---  - the MemoizeKatydid class that combines the the Memoize classes of enter and leave.
---  - derive, validate and filter for the MemoizeKatydid class.
-
 import VerifiedFilter.Std.Vector
 import VerifiedFilter.Std.Memoize.Memoize
 

@@ -70,13 +70,9 @@ noncomputable def ParseStack.size (s: ParseStack α): Nat :=
 @[simp]
 noncomputable def CurrentState.size (s: CurrentState α): Nat :=
   match s with
-  -- unknown needs to be the larger than opened, since it is the next state.
   | CurrentState.unknown hedge => 4 + Hedge.size hedge
-  -- field needs to be larger than opened, since opened follows from field.
   | CurrentState.node (Hedge.Node.node _ children) => 3 + Hedge.size children
-  -- opened is always the second state, but also follows from field, so it needs to be smaller than unknown and field.
   | CurrentState.opened hedge => 2 + Hedge.size hedge
-  -- eof
   | CurrentState.eof => 0
 
 @[simp]

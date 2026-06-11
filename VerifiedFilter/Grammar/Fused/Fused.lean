@@ -48,24 +48,6 @@ instance
 instance [DecidableEq φ] [Hashable φ] [DecidableEq α]: FusedKatydid (Impl α (φ × Ref n)) (φ × Ref n) α where
   -- all instances have been created, so no implementations are required here
 
-def deriveEnter [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
-  (G: Grammar n φ) (Φ: φ → α → Bool)
-  (xs: Vector (Regex (φ × Ref n)) l): m (Vector (Regex (φ × Ref n)) (symcounts xs)) := do
-  let enters ← MemoizeKatydids.entersM ⟨_, xs⟩
-  let token ← Parser.token
-  let childxs: Vector (Regex (φ × Ref n)) (symcounts xs) :=
-    (Vector.map (fun ⟨pred, ref⟩ => if Φ pred token then G.lookup ref else Regex.emptyset)) enters.1
-  return childxs
-
-def deriveLeave [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
-  (xs: Vector (Regex (φ × Ref n)) l) (cs: Vector (Regex (φ × Ref n)) (symcounts xs)): m (Vector (Regex (φ × Ref n)) l) :=
-  MemoizeKatydids.leavesM ⟨_, _, (Vector.map Regex.null cs)⟩
-
-def deriveValue [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
-  (G: Grammar n φ) (Φ: φ → α → Bool)
-  (xs: Vector (Regex (φ × Ref n)) l): m (Vector (Regex (φ × Ref n)) l) := do
-  deriveEnter G Φ xs >>= deriveLeave (α := α) xs
-
 partial def fusedDerive [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
   (G: Grammar n φ) (Φ: φ → α → Bool)
   (rs: Vector (Regex (φ × Ref n)) l): m (Vector (Regex (φ × Ref n)) l) := do
@@ -103,19 +85,16 @@ def run' [DecidableEq φ] [Hashable φ]
   (parserState: HedgeParser.ParserState α)
   (f: Impl α (φ × Ref n) β)
   : Except String β :=
-  let s1 := StateT.run f enterState
-  let s2 := StateT.run s1 leaveState
-  let s3 := EStateM.run s2 parserState
-  match s3 with
+  match EStateM.run (s := parserState) (StateT.run (s := leaveState) (StateT.run (s := enterState) f)) with
   | EStateM.Result.ok k _ => Except.ok k.1.1
   | EStateM.Result.error err _ => Except.error err
 
 def run [DecidableEq α] [Hashable α] (G: Grammar n (Pred.AnyEq.Pred α)) (t: Hedge.Node α): Except String Bool :=
   run'
-    (enters.init (φ := (Pred.AnyEq.Pred α)))
-    leaves.init
+    (enters.init)
+    (leaves.init)
     (HedgeParser.ParserState.mk' t)
-    (validates (φ := (Pred.AnyEq.Pred α)) (m := Impl α ((Pred.AnyEq.Pred α) × Ref n)) G Pred.AnyEq.Pred.evalb G.start)
+    (validates (m := Impl α ((Pred.AnyEq.Pred α) × Ref n)) G Pred.AnyEq.Pred.evalb G.start)
 
 -- Tests
 

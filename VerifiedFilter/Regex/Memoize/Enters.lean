@@ -1,6 +1,3 @@
--- We define MemTable.enter memoizes the enter function.
--- We also prove soundness of this function using the State monad.
-
 import VerifiedFilter.Std.Memoize.Memoize
 
 import VerifiedFilter.Std.Hashable
