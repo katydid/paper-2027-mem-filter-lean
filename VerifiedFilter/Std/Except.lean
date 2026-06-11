@@ -1,3 +1,5 @@
+-- Except.lean implements DecidableEq for Except.
+
 import Init.Control.Except
 
 -- Thank you Brandon Rozek - https://brandonrozek.com/blog/writing-unit-tests-lean-4/
