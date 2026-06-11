@@ -1,6 +1,10 @@
+-- Token defines all the Tokens that the `Parser Token` can return.
+-- This is useful to emulate a Parser that has parsed serialized data, such as JSON or Protocol Buffers.
+
 def Bytes := Array UInt8
   deriving DecidableEq, Ord, Repr, Hashable
 
+-- Instead of using Float64, we use Float64Bits so that it is DecidableEq and Hashable.
 abbrev Float64Bits := UInt64
 def toFloat (f: Float64Bits): Float := Float.ofBits f
 def fromFloat (f: Float): Float64Bits := Float.toBits f

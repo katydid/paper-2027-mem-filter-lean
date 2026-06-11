@@ -1,3 +1,6 @@
+-- encode uses the Parser to parse the serialized into a Hedge.
+-- This is only used for testing.
+
 import VerifiedFilter.Std.Except
 
 import VerifiedFilter.Parser.Hint

@@ -5,3 +5,4 @@ import VerifiedFilter.Parser.Parser
 import VerifiedFilter.Parser.Stack
 import VerifiedFilter.Parser.Token
 import VerifiedFilter.Parser.TokenHedge
+import VerifiedFilter.Parser.Walk

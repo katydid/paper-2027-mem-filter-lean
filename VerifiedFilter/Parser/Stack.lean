@@ -1,3 +1,4 @@
+-- The Stack is used as the State of Parser implementations.
 abbrev Stack α := List α
 
 namespace Stack

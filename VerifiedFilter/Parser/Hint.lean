@@ -1,3 +1,5 @@
+-- Hint defines a Hint of the structure of the data that is being parsed by the Parser.
+
 inductive Hint where | enter | leave | value | eof
   deriving Repr, DecidableEq
 

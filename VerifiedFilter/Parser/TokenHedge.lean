@@ -1,3 +1,6 @@
+-- TokenHedge is used for testing to easily create a `Hedge Token` values,
+-- that can be walked or validated with the Parser.
+
 import VerifiedFilter.Std.Hedge
 import VerifiedFilter.Parser.Token
 

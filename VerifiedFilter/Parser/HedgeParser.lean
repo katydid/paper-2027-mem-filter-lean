@@ -1,11 +1,15 @@
+-- HedgeParser is an implementation of a Parser for the Hedge data structure.
+-- This is useful for creating examples and tests.
+
 import VerifiedFilter.Std.Debug
 import VerifiedFilter.Std.Except
+import VerifiedFilter.Std.Hedge
 
 import VerifiedFilter.Parser.Token
 import VerifiedFilter.Parser.TokenHedge
 import VerifiedFilter.Parser.Stack
-import VerifiedFilter.Std.Hedge
 import VerifiedFilter.Parser.Parser
+import VerifiedFilter.Parser.Walk
 
 local elab "simp_monads" : tactic => do
   Lean.Elab.Tactic.evalTactic (← `(tactic| simp [
