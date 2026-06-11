@@ -12,6 +12,14 @@ def Pred.evalb {α: Type} [DecidableEq α] (p: Pred α) (x: α): Bool := match p
   | Pred.eq y => x = y
   | Pred.any => true
 
+def Pred.evalmb [Monad m] [MonadExcept String m] {α: Type} [DecidableEq α] (p: Pred α) (x: m α): m Bool := do
+  match p with
+  | Pred.eq y =>
+    let x' <- x
+    return x' == y
+  | Pred.any =>
+    return true
+
 def Pred.pred_is_decpred {α : Type} [d: DecidableEq α] (p: Pred α): (a: α) → Decidable (Pred.eval p a) :=
   fun x =>
     match p with

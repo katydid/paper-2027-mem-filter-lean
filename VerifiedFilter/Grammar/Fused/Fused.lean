@@ -1,5 +1,5 @@
 -- Fused is a memoizable version of the validation algorithm that has fused the parsing and derivatives to not need to create any intermediate data structures.
-
+import VerifiedFilter.Std.Thunk
 import VerifiedFilter.Std.Hedge
 
 import VerifiedFilter.Grammar.Grammar
@@ -49,15 +49,14 @@ instance [DecidableEq φ] [Hashable φ] [DecidableEq α]: FusedKatydid (Impl α 
   -- all instances have been created, so no implementations are required here
 
 partial def fusedDerive [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
-  (G: Grammar n φ) (Φ: φ → α → Bool)
+  (G: Grammar n φ) (Φ: φ → m α → m Bool)
   (rs: Vector (Regex (φ × Ref n)) l): m (Vector (Regex (φ × Ref n)) l) := do
   if Vector.all rs Regex.unescapable then Parser.skip; return rs
   match ← Parser.next with
   | Hint.value =>
     let ⟨enters, _⟩ ← MemoizeKatydids.entersM ⟨l, rs⟩
-    let token ← Parser.token
-    let childrs := Vector.map (xs := enters)
-      (fun ⟨pred, ref⟩ => if Φ pred token then G.lookup ref else Regex.emptyset)
+    let childrs <- Vector.mapM (xs := enters) (fun ⟨pred, ref⟩ =>
+      do if <- Φ pred Parser.token then return G.lookup ref else return Regex.emptyset)
     _ ← Parser.next -- always Hint.enter
     let dchildrs ← fusedDerive G Φ childrs -- handle children
     let rsLeave ← MemoizeKatydids.leavesM ⟨l, rs, (Vector.map Regex.null dchildrs)⟩
@@ -66,7 +65,7 @@ partial def fusedDerive [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Re
   | _ => return rs -- Hint.leave or Hint.eof
 
 def validates {m} [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
-  (G: Grammar n φ) (Φ: φ → α → Bool)
+  (G: Grammar n φ) (Φ: φ → m α → m Bool)
   (x: Regex (φ × Ref n)): m Bool := do
   let dxs ← fusedDerive G Φ #v[x]
   return Regex.null dxs.head
@@ -94,7 +93,7 @@ def run [DecidableEq α] [Hashable α] (G: Grammar n (Pred.AnyEq.Pred α)) (t: H
     (enters.init)
     (leaves.init)
     (HedgeParser.ParserState.mk' t)
-    (validates (m := Impl α ((Pred.AnyEq.Pred α) × Ref n)) G Pred.AnyEq.Pred.evalb G.start)
+    (validates (m := Impl α ((Pred.AnyEq.Pred α) × Ref n)) G Pred.AnyEq.Pred.evalmb G.start)
 
 -- Tests
 
