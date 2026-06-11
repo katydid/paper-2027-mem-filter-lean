@@ -1,3 +1,6 @@
+-- Replaces.lean is a version of Replace.lean that handles a Vector a Regexes instead of a single Regex.
+-- This is used by Fused.
+
 import VerifiedFilter.Regex.Replace
 
 namespace Regex

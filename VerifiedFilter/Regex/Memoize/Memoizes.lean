@@ -1,3 +1,6 @@
+-- Memoizes.lean is a version of Memoize.lean that handles Vectors of Regexes instead of a single Regex.
+-- This is used by Fused.
+
 import VerifiedFilter.Std.Vector
 import VerifiedFilter.Std.Memoize.Memoize
 

@@ -1,3 +1,6 @@
+-- Leaves.lean is a version of Leave.lean that handles a Vector a Regexes instead of a single Regex.
+-- This is used by Fused.
+
 import VerifiedFilter.Std.Memoize.Memoize
 
 import VerifiedFilter.Std.Hashable

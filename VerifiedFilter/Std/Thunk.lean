@@ -1,3 +1,5 @@
+-- Thunk.lean implements classes for Thunk.
+
 instance [DecidableEq α] : DecidableEq (Thunk α) :=
   fun a b =>
     if hget: a.get = b.get

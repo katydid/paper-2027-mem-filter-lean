@@ -1,3 +1,6 @@
+-- Katydids.lean is a version of Katydid.lean that handles a Vector a Regexes instead of a single Regex.
+-- This is used by Fused.
+
 import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.Point
 import VerifiedFilter.Regex.Extracts

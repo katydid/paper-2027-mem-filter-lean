@@ -1,3 +1,6 @@
+-- SymCounts.lean is a version of SymCount.lean that handles a Vector a Regexes instead of a single Regex.
+-- This is used by Fused.
+
 import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.SymCount
 

@@ -1,3 +1,6 @@
+-- Enters.lean is a version of Enter.lean that handles a Vector a Regexs instead of a single Regex.
+-- This is used by Fused.
+
 import VerifiedFilter.Std.Memoize.Memoize
 
 import VerifiedFilter.Std.Hashable

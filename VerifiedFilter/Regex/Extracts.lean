@@ -1,3 +1,6 @@
+-- Extracts.lean is a version of Extract.lean that handles a Vector a Regexes instead of a single Regex.
+-- This is used by Fused.
+
 import VerifiedFilter.Regex.Regex
 import VerifiedFilter.Regex.SymCounts
 import VerifiedFilter.Regex.Extract
