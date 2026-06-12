@@ -19,11 +19,9 @@ import VerifiedFilter.Parser.HedgeParser
 
 open Regex.Memoize (MemoizeKatydids)
 
-class FusedKatydid (m: Type → Type u) (σ: Type) (α: Type) [DecidableEq σ] [Hashable σ] extends
-  Monad m,
-  MonadExcept String m,
-  Parser m α,
-  MemoizeKatydids m σ
+class FusedKatydid (m: Type → Type u) (σ: Type) (α: Type)
+  [DecidableEq σ] [Hashable σ] extends
+  Monad m, MonadExcept String m, Parser m α, MemoizeKatydids m σ
 
 abbrev Impl α σ [DecidableEq σ] [Hashable σ] β :=
   (StateT (Regex.Memoize.entersMemTable σ)
