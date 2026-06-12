@@ -10,12 +10,9 @@ def toFloat (f: Float64Bits): Float := Float.ofBits f
 def fromFloat (f: Float): Float64Bits := Float.toBits f
 
 inductive Token where
-  | null | bool (value: Bool) | string (value: String)
+  | null | bool (value: Bool) | string (value: String) | bytes (value: Bytes)
   | int64 (value: Int64) | float64 (value: Float64Bits) | decimal (value: String)
-  | tag (value: String)
-  | nanoseconds (value: Int64)
-  | datetime (value: String)
-  | bytes (value: Bytes)
+  | nanoseconds (value: Int64) | datetime (value: String) | tag (value: String)
   deriving DecidableEq, Ord, Repr, Hashable
 
 instance : ToString Token :=
