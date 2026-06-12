@@ -95,6 +95,24 @@ def run [DecidableEq α] [Hashable α] (G: Grammar n (Pred.AnyEq.Pred α)) (t: H
     (HedgeParser.ParserState.mk' t)
     (validates (m := Impl α ((Pred.AnyEq.Pred α) × Ref n)) G Pred.AnyEq.Pred.evalmb G.start)
 
+def runM [DecidableEq α] [Hashable α]
+  (G: Grammar n (Pred.AnyEq.Pred α))
+  [MonadStateOf (HedgeParser.ParserState α) m]
+  [Monad m] [MonadExcept String m] [FusedKatydid m ((Pred.AnyEq.Pred α) × Ref n) α]
+  (hedge: Hedge α): m Bool := do
+  MonadState.set (HedgeParser.ParserState.mks hedge)
+  validates G Pred.AnyEq.Pred.evalmb G.start
+
+def filter [DecidableEq α] [Hashable α] (G: Grammar n (Pred.AnyEq.Pred α)) (hs: List (Hedge α)): Impl α ((Pred.AnyEq.Pred α) × Ref n) (List (Hedge α)) :=
+  List.filterM
+    (fun h => MonadExcept.tryCatch (m := Impl α ((Pred.AnyEq.Pred α) × Ref n)) (runM G h) (fun _ => pure false))
+    hs
+
+def runFilter [DecidableEq α] [Hashable α] (G: Grammar n (Pred.AnyEq.Pred α)) (hs: List (Hedge α)): List (Hedge α) :=
+  match EStateM.run (s := (HedgeParser.ParserState.mks [])) (StateT.run (s := leaves.init) (StateT.run (s := enters.init) (filter G hs))) with
+  | EStateM.Result.ok k _ => k.1.1
+  | EStateM.Result.error _ _ => []
+
 -- Tests
 
 open TokenHedge (strnode)
@@ -229,3 +247,23 @@ open TokenHedge (strnode)
   )
   (strnode "a" [strnode "b" [], strnode "c" [strnode "d" []]])
   = Except.ok false
+
+#guard runFilter
+  (Grammar.mk (n := 1)
+    (Regex.star (Regex.symbol (Pred.AnyEq.Pred.eq (Token.string "a"), 0)))
+    #v[Regex.emptystr]
+  )
+  [
+    [strnode "a" []],
+    [strnode "a" [], strnode "a" []],
+    [strnode "b" []],
+    [strnode "a" [], strnode "a" [], strnode "a" []],
+    [strnode "a" [], strnode "b" [], strnode "c" []],
+    [strnode "a" [], strnode "a" [], strnode "a" [], strnode "a" []],
+  ]
+  = [
+    [strnode "a" []],
+    [strnode "a" [], strnode "a" []],
+    [strnode "a" [], strnode "a" [], strnode "a" []],
+    [strnode "a" [], strnode "a" [], strnode "a" [], strnode "a" []],
+  ]
