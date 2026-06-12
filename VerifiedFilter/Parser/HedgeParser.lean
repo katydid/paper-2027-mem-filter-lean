@@ -297,6 +297,49 @@ theorem next_eof_gt_eof:
 open Parser (walk Action)
 open TokenHedge (strnode)
 
+def assertEq [DecidableEq α] (x y: α) [MonadExcept String m] [Monad m]: m Unit := do
+  if x == y then pure () else throw "not equal"
+
+def node (label: Token) (children: Hedge Token): Hedge.Node Token :=
+  Hedge.Node.node label children
+
+def runs (x: HedgeParser α β) (h: Hedge α): Bool :=
+  match StateT.run' x (ParserState.mks h) with
+  | Except.error _ => false
+  | Except.ok _ => true
+
+def exampleParse1 [p: Parser m Token] [MonadExcept String m] [Monad m]: m Unit := do
+  assertEq Hint.enter (<- p.next) -- enter Hedge.Node
+  assertEq Hint.value (<- p.next); assertEq (Token.string "blogpost") (<- p.token)
+  assertEq Hint.enter (<- p.next) -- enter blogpost
+  assertEq Hint.value (<- p.next); assertEq (Token.string "author") (<- p.token)
+  _ <- p.skip                     -- skip author's children, username, ...
+  assertEq Hint.value (<- p.next); assertEq (Token.string "content") (<- p.token)
+  assertEq Hint.enter (<- p.next); assertEq Hint.leave (<- p.next)
+  assertEq Hint.leave (<- p.next) -- leave blogpost
+  assertEq Hint.leave (<- p.next) -- leave Hedge.Node
+  assertEq Hint.eof (<- p.next)
+
+#guard runs exampleParse1 [node (Token.string "blogpost") [
+    node (Token.string "author") [
+      node (Token.string "username") [node (Token.string "Khaleesi") []]],
+    node (Token.string "content") []
+  ]]
+
+def exampleParse [p: Parser m Token] [MonadExcept String m] [Monad m]: m Unit := do
+  assertEq Hint.enter (<- p.next) -- enter blogpost
+  assertEq Hint.value (<- p.next); assertEq (Token.string "author") (<- p.token)
+  _ <- p.skip                     -- skip author's children, username, ...
+  assertEq Hint.value (<- p.next); assertEq (Token.string "content") (<- p.token)
+  assertEq Hint.enter (<- p.next); assertEq Hint.leave (<- p.next)
+  assertEq Hint.leave (<- p.next) -- leave blogpost
+  assertEq Hint.eof (<- p.next)
+
+#guard runs exampleParse [
+    node (Token.string "author") [
+      node (Token.string "username") [node (Token.string "Khaleesi") []]],
+    node (Token.string "content") []]
+
 #guard run'
   next
   (ParserState.mk (CurrentState.unknown [Hedge.Node.node 0 []]) [])
