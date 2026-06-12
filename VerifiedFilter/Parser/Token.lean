@@ -1,5 +1,3 @@
-import VerifiedFilter.Std.Thunk
-
 -- Token defines all the Tokens that the `Parser Token` can return.
 -- This is useful to emulate a Parser that has parsed serialized data, such as JSON or Protocol Buffers.
 
@@ -12,12 +10,12 @@ def toFloat (f: Float64Bits): Float := Float.ofBits f
 def fromFloat (f: Float): Float64Bits := Float.toBits f
 
 inductive Token where
-  | null | bool (value: Thunk Bool) | string (value: Thunk String)
-  | int64 (value: Thunk Int64) | float64 (value: Thunk Float64Bits) | decimal (value: Thunk String)
-  | tag (value: Thunk String)
-  | nanoseconds (value: Thunk Int64)
-  | datetime (value: Thunk String)
-  | bytes (value: Thunk Bytes)
+  | null | bool (value: Bool) | string (value: String)
+  | int64 (value: Int64) | float64 (value: Float64Bits) | decimal (value: String)
+  | tag (value: String)
+  | nanoseconds (value: Int64)
+  | datetime (value: String)
+  | bytes (value: Bytes)
   deriving DecidableEq, Ord, Repr, Hashable
 
 instance : ToString Token :=
@@ -25,17 +23,17 @@ instance : ToString Token :=
     match t with
     | Token.null => "_"
     | Token.bool v =>
-      if v.get
+      if v
       then "t"
       else "f"
     | Token.bytes v => "x:" ++ reprStr v
-    | Token.string v => v.get
+    | Token.string v => v
     | Token.int64 v => "-:" ++ reprStr v
-    | Token.float64 v => ".:" ++ reprStr v.get.toFloat
-    | Token.decimal v => "/:" ++ v.get
+    | Token.float64 v => ".:" ++ reprStr v.toFloat
+    | Token.decimal v => "/:" ++ v
     | Token.nanoseconds v => "9:" ++ reprStr v
-    | Token.datetime v => "z:" ++ v.get
-    | Token.tag v => "#:" ++ v.get
+    | Token.datetime v => "z:" ++ v
+    | Token.tag v => "#:" ++ v
   ⟩
 
 namespace Token
