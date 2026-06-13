@@ -2,19 +2,18 @@
 import VerifiedFilter.Std.Hedge
 
 import VerifiedFilter.Grammar.Grammar
-import VerifiedFilter.Regex.Regex
-import VerifiedFilter.Regex.Katydids
-import VerifiedFilter.Regex.SymCounts
-import VerifiedFilter.Regex.Memoize.Memoize
-import VerifiedFilter.Regex.Memoize.Memoizes
-import VerifiedFilter.Regex.Memoize.Enters
-import VerifiedFilter.Regex.Memoize.Leaves
-import VerifiedFilter.Pred.AnyEq
-
 import VerifiedFilter.Parser.Hint
 import VerifiedFilter.Parser.Parser
 import VerifiedFilter.Parser.TokenHedge
 import VerifiedFilter.Parser.HedgeParser
+import VerifiedFilter.Pred.AnyEq
+import VerifiedFilter.Regex.Katydids
+import VerifiedFilter.Regex.Memoize.Enters
+import VerifiedFilter.Regex.Memoize.Leaves
+import VerifiedFilter.Regex.Memoize.Memoize
+import VerifiedFilter.Regex.Memoize.Memoizes
+import VerifiedFilter.Regex.Regex
+import VerifiedFilter.Regex.SymCounts
 
 open Regex.Memoize (MemoizeKatydids)
 
@@ -101,9 +100,7 @@ def runM [DecidableEq α] [Hashable α]
   validatesM G Pred.AnyEq.Pred.evalmb G.start
 
 def filtersM [DecidableEq α] [Hashable α] (G: Grammar n (Pred.AnyEq.Pred α)) (hs: List (Hedge α)): Impl α ((Pred.AnyEq.Pred α) × Ref n) (List (Hedge α)) :=
-  List.filterM
-    (fun h => MonadExcept.tryCatch (m := Impl α ((Pred.AnyEq.Pred α) × Ref n)) (runM G h) (fun _ => pure false))
-    hs
+  List.filterM (as := hs) (fun h => MonadExcept.tryCatch (m := Impl α ((Pred.AnyEq.Pred α) × Ref n)) (runM G h) (fun _ => pure false))
 
 def filters [DecidableEq α] [Hashable α] (G: Grammar n (Pred.AnyEq.Pred α)) (hs: List (Hedge α)): List (Hedge α) :=
   match EStateM.run (s := (HedgeParser.ParserState.mks [])) (StateT.run (s := leaves.init) (StateT.run (s := enters.init) (filtersM G hs))) with
