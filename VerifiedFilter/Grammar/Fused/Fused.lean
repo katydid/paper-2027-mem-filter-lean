@@ -1,5 +1,4 @@
 -- Fused is a memoizable version of the validation algorithm that has fused the parsing and derivatives to not need to create any intermediate data structures.
-import VerifiedFilter.Std.Thunk
 import VerifiedFilter.Std.Hedge
 
 import VerifiedFilter.Grammar.Grammar
