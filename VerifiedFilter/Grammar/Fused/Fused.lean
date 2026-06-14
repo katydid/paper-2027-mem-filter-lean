@@ -58,8 +58,8 @@ partial def Grammar.Fused.derive
     let ⟨enterSymbols, _⟩ ← MemoizeKatydids.entersM ⟨l, rs⟩
     let childrs <- Vector.mapM (xs := enterSymbols) (fun ⟨pred, ref⟩ =>
       do if <- Φ pred Parser.token then return G.lookup ref else return Regex.emptyset)
-    let dchildrs ← Fused.derive G Φ childrs -- handle children
-    let drs ← MemoizeKatydids.leavesM ⟨l, rs, (Vector.map Regex.null dchildrs)⟩
+    let childbs ← Vector.map Regex.null <$> Fused.derive G Φ childrs -- handle children
+    let drs               ← MemoizeKatydids.leavesM ⟨l, rs, childbs⟩
     Fused.derive G Φ drs -- handle siblings
   | Hint.enter => Fused.derive G Φ rs -- only possible on the first call (top of the stack)
   | _ => return rs -- Hint.leave or Hint.eof
@@ -76,11 +76,11 @@ partial def Grammar.Fused.derive
   if Vector.all rs Regex.unescapable then Parser.skip; return rs
   let mut (hint, drs) := (← Parser.next, rs)
   while hint == Hint.value do
-    let ⟨enterSymbols, _⟩ ← MemoizeKatydids.entersM ⟨l, drs⟩
+    let ⟨enterSymbols, _⟩   ← MemoizeKatydids.entersM ⟨l, drs⟩
     let childrs <- Vector.mapM (xs := enterSymbols) (fun ⟨pred, ref⟩ => do
       return if <- Φ pred Parser.token then G.lookup ref else Regex.emptyset)
-    let dchildrs ← Fused.derive G Φ childrs
-    drs := ← MemoizeKatydids.leavesM ⟨l, drs, Vector.map Regex.null dchildrs⟩
+    let childbs ← Vector.map Regex.null <$> Fused.derive G Φ childrs
+    drs :=                  ← MemoizeKatydids.leavesM ⟨l, drs, childbs⟩
     hint := ← Parser.next
   if hint == Hint.enter then Fused.derive G Φ rs else return drs
 
