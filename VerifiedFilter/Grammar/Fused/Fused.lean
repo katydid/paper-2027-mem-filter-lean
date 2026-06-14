@@ -77,8 +77,8 @@ partial def Grammar.Fused.derive
   let mut (hint, drs) := (← Parser.next, rs)
   while hint == Hint.value do
     let ⟨enterSymbols, _⟩   ← MemoizeKatydids.entersM ⟨l, drs⟩
-    let childrs <- Vector.mapM (xs := enterSymbols) (fun ⟨pred, ref⟩ => do
-      return if <- Φ pred Parser.token then G.lookup ref else Regex.emptyset)
+    let childrs ← Vector.mapM (xs := enterSymbols) (fun ⟨pred, ref⟩ => do
+      return if ← Φ pred Parser.token then G.lookup ref else Regex.emptyset)
     let childbs ← Vector.map Regex.null <$> Fused.derive G Φ childrs
     drs :=                  ← MemoizeKatydids.leavesM ⟨l, drs, childbs⟩
     hint := ← Parser.next
