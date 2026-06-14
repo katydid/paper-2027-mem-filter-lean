@@ -4,6 +4,7 @@
 import VerifiedFilter.Std.Debug
 import VerifiedFilter.Std.Except
 import VerifiedFilter.Std.Hedge
+import VerifiedFilter.Std.TestUtils
 
 import VerifiedFilter.Parser.Token
 import VerifiedFilter.Parser.TokenHedge
@@ -296,9 +297,6 @@ theorem next_eof_gt_eof:
 
 open Parser (walk Action)
 open TokenHedge (strnode)
-
-def assertEq [DecidableEq α] (x y: α) [MonadExcept String m] [Monad m]: m Unit := do
-  if x == y then pure () else throw "not equal"
 
 def node (label: Token) (children: Hedge Token): Hedge.Node Token :=
   Hedge.Node.node label children

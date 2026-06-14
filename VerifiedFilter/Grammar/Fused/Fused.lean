@@ -1,5 +1,6 @@
 -- Fused is a memoizable version of the validation algorithm that has fused the parsing and derivatives to not need to create any intermediate data structures.
 import VerifiedFilter.Std.Hedge
+import VerifiedFilter.Std.TestUtils
 
 import VerifiedFilter.Grammar.Grammar
 import VerifiedFilter.Parser.Hint
@@ -44,6 +45,9 @@ instance
 instance [DecidableEq φ] [Hashable φ] [DecidableEq α]: FusedKatydid (Impl α (φ × Ref n)) (φ × Ref n) α where
   -- all instances have been created, so no implementations are required here
 
+-- Functional version of Grammar.Fused.derive
+namespace functional_alternative
+
 partial def Grammar.Fused.derive
   [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
   (G: Grammar n φ) (Φ: φ → m α → m Bool)
@@ -58,8 +62,28 @@ partial def Grammar.Fused.derive
     let dchildrs ← Fused.derive G Φ childrs -- handle children
     let drs ← MemoizeKatydids.leavesM ⟨l, rs, (Vector.map Regex.null dchildrs)⟩
     Fused.derive G Φ drs -- handle siblings
-  | Hint.enter => Fused.derive G Φ rs
+  | Hint.enter => Fused.derive G Φ rs -- only possible on the first call (top of the stack)
   | _ => return rs -- Hint.leave or Hint.eof
+
+end functional_alternative
+
+namespace imperative_alternative
+
+-- Imperative version of Grammar.Fused.derive
+partial def Grammar.Fused.derive
+  [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
+  (G: Grammar n φ) (Φ: φ → m α → m Bool)
+  (rs: Vector (Regex (φ × Ref n)) l): m (Vector (Regex (φ × Ref n)) l) := do
+  if Vector.all rs Regex.unescapable then Parser.skip; return rs
+  let mut (hint, drs) := (← Parser.next, rs)
+  while hint == Hint.value do
+    let ⟨enterSymbols, _⟩ ← MemoizeKatydids.entersM ⟨l, drs⟩
+    let childrs <- Vector.mapM (xs := enterSymbols) (fun ⟨pred, ref⟩ => do
+      return if <- Φ pred Parser.token then G.lookup ref else Regex.emptyset)
+    let dchildrs ← Fused.derive G Φ childrs
+    drs := ← MemoizeKatydids.leavesM ⟨l, drs, Vector.map Regex.null dchildrs⟩
+    hint := ← Parser.next
+  if hint == Hint.enter then Fused.derive G Φ rs else return drs
 
 def Grammar.Fused.validateM {m} [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
   (G: Grammar n φ) (Φ: φ → m α → m Bool)
