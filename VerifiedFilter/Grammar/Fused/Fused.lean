@@ -68,21 +68,24 @@ end functional_alternative
 
 namespace imperative_alternative
 
+open Regex
+
 -- Imperative version of Grammar.Fused.derive
 partial def Grammar.Fused.derive
   [DecidableEq φ] [Hashable φ] [FusedKatydid m (φ × Ref n) α]
   (G: Grammar n φ) (Φ: φ → m α → m Bool)
   (rs: Vector (Regex (φ × Ref n)) l): m (Vector (Regex (φ × Ref n)) l) := do
-  if Vector.all rs Regex.unescapable then Parser.skip; return rs
-  let mut (hint, drs) := (← Parser.next, rs)
-  while hint == Hint.value do
-    let ⟨enterSymbols, _⟩   ← MemoizeKatydids.entersM ⟨l, drs⟩
-    let childrs ← Vector.mapM (xs := enterSymbols) (fun ⟨pred, ref⟩ => do
-      return if ← Φ pred Parser.token then G.lookup ref else Regex.emptyset)
+  let mut drs := rs
+  if Vector.all rs Regex.unescapable then Parser.skip; return drs
+  let mut h := ← Parser.next
+  while h == Hint.value do
+    let enterSymbols    ← MemoizeKatydids.entersM ⟨l, drs⟩
+    let childrs ← Vector.mapM (xs := enterSymbols.val) (fun ⟨pred, ref⟩ => do
+      return if ← Φ pred Parser.token then G.lookup ref else emptyset)
     let childbs ← Vector.map Regex.null <$> Fused.derive G Φ childrs
-    drs :=                  ← MemoizeKatydids.leavesM ⟨l, drs, childbs⟩
-    hint := ← Parser.next
-  if hint == Hint.enter then Fused.derive G Φ rs else return drs
+    drs :=              ← MemoizeKatydids.leavesM ⟨l, drs, childbs⟩
+    h := ← Parser.next
+  if h == Hint.enter then Fused.derive G Φ rs else return drs
 
 -- end imperative_alternative
 
