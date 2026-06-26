@@ -5,3 +5,4 @@ import VerifiedFilter.Parser
 import VerifiedFilter.Pred
 import VerifiedFilter.Regex
 import VerifiedFilter.Related
+import VerifiedFilter.ExampleSmallBlogpost.ExampleSmallBlogpost
