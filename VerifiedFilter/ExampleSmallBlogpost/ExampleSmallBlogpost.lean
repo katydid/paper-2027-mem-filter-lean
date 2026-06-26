@@ -51,3 +51,6 @@ def example_translated_jsonschema : Grammar 7 Pred := Grammar.mk
     , (symbol (Pred.tagEq "object", 6))
     , (interleave (symbol (Pred.strEq "username", 2))
                   (optional (symbol (Pred.strEq "email", 3))))])
+
+def example_additional_properties :=
+  star (symbol (Pred.not (Pred.or (Pred.strEq "content") (Pred.strEq "author")), 1))
