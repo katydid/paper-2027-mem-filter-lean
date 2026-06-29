@@ -329,7 +329,7 @@ def exampleParse [p: Parser m Token] [MonadExcept String m] [Monad m]: m Unit :=
   assertEq (← p.next) Hint.value; assertEq (← p.token) (Token.string "author")
   _ ← p.skip                     -- skip author's children, username, ...
   assertEq (← p.next) Hint.value; assertEq (← p.token) (Token.string "content")
-  assertEq (← p.next) Hint.enter; assertEq (← p.next) Hint.leave
+  assertEq (← p.next) Hint.enter; assertEq (← p.next) Hint.leave -- empty content
   assertEq (← p.next) Hint.leave -- leave blogpost
   assertEq (← p.next) Hint.eof
 
