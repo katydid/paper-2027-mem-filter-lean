@@ -110,8 +110,8 @@ private def example_grammar_library: Grammar 5 (Option String) :=
     [node "book" [
       (node "isbn" [node "123" []]),
       (node "title" [node "numbers" []]),
-      (node "author" [node "name" [node "Brink" []]]),
-      (node "author" [node "name" [node "Paul" []], node "born" [node "July" []]])
+      (node "author" [node "name" [node "Mark" []]]),
+      (node "author" [node "name" [node "Travis" []], node "born" [node "July" []]])
     ]]
   ]
   = true
