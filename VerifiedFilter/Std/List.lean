@@ -65,9 +65,9 @@ theorem drop_exists (n: Nat) (xs: List α): ∃ ys, xs = ys ++ (List.drop n xs) 
 
 def interleaves (xs: List α) (acc: List (List α × List α) := [([], [])])
   : List (List α × List α) := match xs with
-  | [] => acc
-  | (x::xs) => (interleaves xs acc).map (fun res => (x::res.1, res.2))
-            ++ (interleaves xs acc).map (fun res => (res.1, x::res.2))
+    | [] => acc
+    | (x::xs) => (interleaves xs acc).map (fun res => (x::res.1, res.2))
+              ++ (interleaves xs acc).map (fun res => (res.1, x::res.2))
 
 #guard (interleaves [1,2,3,4]).contains ([1,3],[2,4])
 #guard (interleaves [1,2,3,4]).contains ([3],[1,2,4])

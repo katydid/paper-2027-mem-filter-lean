@@ -1,8 +1,8 @@
-# Verified Derivatives for Fast Filtering and Schema Validation of Semi-Structured Data 
+# Memoized Derivatives for Fast Filtering and Schema Validation of Semi-Structured Data
 
-Proofs written in [Lean4](https://leanprover.github.io/) of the core [katydid](http://katydid.org.za/) filtering algorithm for the paper: Verified Derivatives for Fast Filtering and Schema Validation of Semi-Structured Data.
+Proofs written in [Lean4](https://leanprover.github.io/) of [Katydid](http://katydid.org.za/)'s memoization technique for the paper: Memoized Derivatives for Fast Filtering and Schema Validation of Semi-Structured Data.
 
-![Check Proofs](https://github.com/katydid/paper-2026-verified-filter-lean/workflows/Check%20Proofs/badge.svg)
+![Check Proofs](https://github.com/katydid/paper-2026-mem-filter-lean/workflows/Check%20Proofs/badge.svg)
 
 Here we formalize the core of the [Katydid](http://katydid.org.za/) filtering algorithm.
 This algorithm allows us to filtering through millions of serialized data structures per second on a single core.

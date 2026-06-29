@@ -520,7 +520,6 @@ partial def childrenDeriv (cx: Context) (g: Grammar n) (p: Pattern n) (children:
   -- termination_by sizeOf children
   -- decreasing_by
   --   · subst h
-  --     sorry
 
 -- The key concept used by this validation technique is the concept of a derivative.
 -- The derivative of a pattern p with respect to a node x is a pattern for what's left of p after matching x; in other words,

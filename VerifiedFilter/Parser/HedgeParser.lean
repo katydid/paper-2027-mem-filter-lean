@@ -325,13 +325,13 @@ def exampleParse1 [p: Parser m Token] [MonadExcept String m] [Monad m]: m Unit :
   ]]
 
 def exampleParse [p: Parser m Token] [MonadExcept String m] [Monad m]: m Unit := do
-  assertEq Hint.enter (<- p.next) -- enter blogpost
-  assertEq Hint.value (<- p.next); assertEq (Token.string "author") (<- p.token)
-  _ <- p.skip                     -- skip author's children, username, ...
-  assertEq Hint.value (<- p.next); assertEq (Token.string "content") (<- p.token)
-  assertEq Hint.enter (<- p.next); assertEq Hint.leave (<- p.next)
-  assertEq Hint.leave (<- p.next) -- leave blogpost
-  assertEq Hint.eof (<- p.next)
+  assertEq (← p.next) Hint.enter -- enter blogpost
+  assertEq (← p.next) Hint.value; assertEq (← p.token) (Token.string "author")
+  _ ← p.skip                     -- skip author's children, username, ...
+  assertEq (← p.next) Hint.value; assertEq (← p.token) (Token.string "content")
+  assertEq (← p.next) Hint.enter; assertEq (← p.next) Hint.leave
+  assertEq (← p.next) Hint.leave -- leave blogpost
+  assertEq (← p.next) Hint.eof
 
 #guard runs exampleParse [
     node (Token.string "author") [

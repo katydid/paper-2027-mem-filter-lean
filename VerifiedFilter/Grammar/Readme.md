@@ -8,3 +8,4 @@ We implement four algorithms for filtering hedges using symbolic regular hedge g
 * [Katydid](./Katydid.lean): the optimized Katydid algorithm without memoization including definitions and proofs of correctness for derive, validate and filter. We also provide [examples](./KatydidExamples.lean).
 * [Memoize](./Memoize/Readme.md): the optimized Katydid algorithm with memoization including defintions and proofs of correctness for derive, validate and filter.
 * [Fused](./Fused/Readme.md): the fused Katydid algorithm with parsing and memoization. This implementation has no proofs of correctness, we leave this as future work.
+* [Compile](./Compile/Readme.md) the algorithm to compile the memoization table.
