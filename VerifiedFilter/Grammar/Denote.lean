@@ -216,7 +216,7 @@ def Rule.denote (G: Grammar n φ) (Φ: φ → α → Prop)
                         ∧ (denote G Φ (Regex.star r1) (List.drop i nodes'))
   | Regex.interleave r1 r2 => ∃ (i: Fin (List.interleaves nodes).length),
         (denote G Φ r1 (List.get (List.interleaves nodes) i).1)
-     ∧ (denote G Φ r2 (List.get (List.interleaves nodes) i).2)
+      ∧ (denote G Φ r2 (List.get (List.interleaves nodes) i).2)
   | Regex.and r1 r2 => (denote G Φ r1 nodes) ∧ (denote G Φ r2 nodes)
   | Regex.compliment r1 => Not (denote G Φ r1 nodes)
   | Regex.xor r1 r2 => ((denote G Φ r1 nodes) ∨ (denote G Φ r2 nodes)) ∧ (Not ((denote G Φ r1 nodes) ∧ (denote G Φ r2 nodes)))
