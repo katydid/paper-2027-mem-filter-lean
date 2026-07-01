@@ -1,4 +1,4 @@
-# Memoized Derivatives for Fast Filtering and Schema Validation of Semi-Structured Data
+# Memoized Derivatives for Fast Filtering and Schema Validation of Semi-Structured Data (Lean)
 
 Proofs written in [Lean4](https://leanprover.github.io/) of [Katydid](http://katydid.org.za/)'s memoization technique for the paper: Memoized Derivatives for Fast Filtering and Schema Validation of Semi-Structured Data.
 
